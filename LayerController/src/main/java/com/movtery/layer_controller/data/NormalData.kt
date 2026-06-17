@@ -61,7 +61,9 @@ data class NormalData(
     @SerialName("isPenetrable")
     val isPenetrable: Boolean,
     @SerialName("isToggleable")
-    val isToggleable: Boolean
+    val isToggleable: Boolean,
+    @SerialName("holdClickCps")
+    val holdClickCps: Int = 0
 ): Widget, Modifiable<NormalData> {
     val clickEvents: List<ClickEvent> get() = _clickEvents
 
@@ -83,7 +85,8 @@ data class NormalData(
                 this._clickEvents.isModified(other._clickEvents) ||
                 this.isSwipple != other.isSwipple ||
                 this.isPenetrable != other.isPenetrable ||
-                this.isToggleable != other.isToggleable
+                this.isToggleable != other.isToggleable ||
+                this.holdClickCps != other.holdClickCps
     }
 }
 
@@ -123,5 +126,6 @@ fun NormalData.cloneNew(): NormalData = NormalData(
     _clickEvents = clickEvents,
     isSwipple = isSwipple,
     isPenetrable = isPenetrable,
-    isToggleable = isToggleable
+    isToggleable = isToggleable,
+    holdClickCps = holdClickCps
 )
