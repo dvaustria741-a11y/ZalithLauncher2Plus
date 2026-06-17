@@ -30,7 +30,11 @@ object VulkanZinkRenderer : RendererInterface {
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
         mapOf(
             "MESA_GL_VERSION_OVERRIDE" to "4.6",
-            "MESA_GLSL_VERSION_OVERRIDE" to "460"
+            "MESA_GLSL_VERSION_OVERRIDE" to "460",
+            "MESA_NO_ERROR" to "1",
+            "LIBGL_MIPMAP" to "3",
+            "MESA_GLTHREAD" to "true",
+            "mesa_glthread" to "true"
         )
     }
 
