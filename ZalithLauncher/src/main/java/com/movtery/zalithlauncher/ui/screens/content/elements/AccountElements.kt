@@ -431,56 +431,61 @@ fun AccountItem(
         },
         enabled = enabled
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = MaterialTheme.shapes.large)
                 .padding(all = 8.dp)
         ) {
-            RadioButton(
-                selected = selected,
-                onClick = {
-                    if (selected || !enabled) return@RadioButton
-                    onSelected(account)
-                },
-                enabled = enabled
-            )
-            PlayerFace(
-                modifier = Modifier.align(Alignment.CenterVertically),
-                account = account,
-                avatarSize = avatarSize,
-                refreshKey = refreshKey
-            )
-            Spacer(modifier = Modifier.width(18.dp))
-            Column(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = account.username,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        brush = if (useChroma) chromaBrush else null
+                RadioButton(
+                    selected = selected,
+                    onClick = {
+                        if (selected || !enabled) return@RadioButton
+                        onSelected(account)
+                    },
+                    enabled = enabled
+                )
+                PlayerFace(
+                    account = account,
+                    avatarSize = avatarSize,
+                    refreshKey = refreshKey
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = account.username,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            brush = if (useChroma) chromaBrush else null
+                        ),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
-                )
-                Text(
-                    text = getAccountTypeName(account),
-                    style = MaterialTheme.typography.labelMedium
-                )
+                    Text(
+                        text = getAccountTypeName(account),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
-            Row {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
                 //更换皮肤/披风
-                Row {
-                    IconButton(
-                        onClick = { openChangeSkinDialog() },
-                        enabled = account.isSkinChangeAllowed()
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(R.drawable.ic_checkroom),
-                            contentDescription = stringResource(R.string.account_change_skin)
-                        )
-                    }
+                IconButton(
+                    onClick = { openChangeSkinDialog() },
+                    enabled = account.isSkinChangeAllowed()
+                ) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(R.drawable.ic_checkroom),
+                        contentDescription = stringResource(R.string.account_change_skin)
+                    )
                 }
 
                 //刷新
@@ -1966,3 +1971,4 @@ private fun getSkinAvatar(
     )
     return avatar
 }
+
