@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Download Files
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           path: ./artifacts
 
@@ -40,7 +40,6 @@ jobs:
           for dir in ./artifacts/*/; do
             dir_name=$(basename "$dir")
           
-            # 跳过 APK
             if [[ "$dir_name" == *"release apk"* ]]; then
               continue
             fi
@@ -55,7 +54,7 @@ jobs:
           echo "Found $(ls ./mappings/ | wc -l) Mapping file(s)"
 
       - name: Upload To Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: |
