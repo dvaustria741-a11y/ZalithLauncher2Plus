@@ -1218,6 +1218,8 @@
     <string name="control_editor_edit_event_swipple">Swipe Trigger</string>
     <string name="control_editor_edit_event_penetrable">Move with Mouse</string>
     <string name="control_editor_edit_event_toggleable">Toggleable</string>
+    <string name="control_editor_edit_event_hold_click">Hold Click (Auto CPS)</string>
+    <string name="control_editor_edit_event_hold_click_cps">Clicks Per Second</string>
     <string name="control_editor_edit_visibility">Visibility Scenario</string>
     <string name="control_editor_edit_visibility_always">Always Visible</string>
     <string name="control_editor_edit_visibility_in_game">Visible In-Game</string>
