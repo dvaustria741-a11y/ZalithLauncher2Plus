@@ -19,6 +19,7 @@
 package com.movtery.layer_controller.observable
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +59,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     var isPenetrable by mutableStateOf(data.isPenetrable)
     var isToggleable by mutableStateOf(data.isToggleable)
     var holdClickCps by mutableStateOf(data.holdClickCps)
+    var opacity by mutableFloatStateOf(data.opacity)
 
     override val behavior: InteractionBehavior
         get() = InteractionBehavior.from(
@@ -255,7 +257,8 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
             isSwipple = isSwipple,
             isPenetrable = isPenetrable,
             isToggleable = isToggleable,
-            holdClickCps = holdClickCps
+            holdClickCps = holdClickCps,
+            opacity = opacity
         )
     }
 }
