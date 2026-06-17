@@ -70,6 +70,7 @@ import com.movtery.zalithlauncher.ui.control.event.LAUNCHER_EVENT_SWITCH_IME
 import com.movtery.zalithlauncher.ui.control.event.LAUNCHER_EVENT_SWITCH_MENU
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.InfoLayoutItem
+import com.movtery.zalithlauncher.ui.screens.main.control_editor.InfoLayoutSliderItem
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.InfoLayoutSwitchItem
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.InfoLayoutTextItem
 import com.movtery.zalithlauncher.ui.theme.cardColor
@@ -203,6 +204,27 @@ private fun EditBasicEvent(
                 data.isToggleable = value
             }
         )
+
+        //连点 (hold-click auto CPS)
+        InfoLayoutSwitchItem(
+            modifier = Modifier.fillMaxWidth(),
+            title = stringResource(R.string.control_editor_edit_event_hold_click),
+            value = data.holdClickCps > 0,
+            onValueChange = { enabled ->
+                data.holdClickCps = if (enabled) 10 else 0
+            }
+        )
+
+        if (data.holdClickCps > 0) {
+            InfoLayoutSliderItem(
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(R.string.control_editor_edit_event_hold_click_cps),
+                value = data.holdClickCps.toFloat(),
+                onValueChange = { data.holdClickCps = it.toInt() },
+                valueRange = 1f..30f,
+                suffix = " CPS"
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
