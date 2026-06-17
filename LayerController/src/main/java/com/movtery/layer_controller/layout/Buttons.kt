@@ -19,6 +19,7 @@
 package com.movtery.layer_controller.layout
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.LocalTextStyle
@@ -98,6 +99,7 @@ internal fun TextButton(
             ?: DefaultObservableButtonStyle
 
         val locale = LocalConfiguration.current.locales[0]
+        val widgetOpacity = if (data is ObservableNormalData) data.opacity else 1f
 
         Box(
             modifier = Modifier
@@ -107,6 +109,7 @@ internal fun TextButton(
                     isDark = isDark,
                     isPressed = isPressed
                 )
+                .alpha(widgetOpacity)
                 .editMode(
                     isEditMode = isEditMode,
                     data = data,
