@@ -1,7 +1,7 @@
 fov:0.0
 renderDistance:4
-simulationDistance:5
-particles:1
+simulationDistance:4
+particles:2
 bobView:true
 anaglyph3d:false
 advancedOpengl:false
@@ -9,7 +9,7 @@ maxFps:260
 fboEnable:true
 fancyGraphics:false
 ao:0
-clouds:true
+clouds:false
 snooperEnabled:true
 enableVsync:false
 pauseOnLostFocus:true
@@ -29,3 +29,4 @@ streamPreferredServer:
 streamChatEnabled:0
 streamChatUserFilter:0
 streamMicToggleBehavior:0
+prioritizeChunkUpdates:2
