@@ -104,12 +104,12 @@ internal fun TextButton(
         Box(
             modifier = Modifier
                 .buttonSize(data, screenSize)
+                .alpha(widgetOpacity)
                 .buttonStyle(
                     style = style,
                     isDark = isDark,
                     isPressed = isPressed
                 )
-                .alpha(widgetOpacity)
                 .editMode(
                     isEditMode = isEditMode,
                     data = data,
