@@ -21,6 +21,14 @@ package com.movtery.layer_controller.observable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.PointerInputChange
 import com.movtery.layer_controller.data.ButtonPosition
 import com.movtery.layer_controller.data.ButtonSize
@@ -49,6 +57,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     var isSwipple by mutableStateOf(data.isSwipple)
     var isPenetrable by mutableStateOf(data.isPenetrable)
     var isToggleable by mutableStateOf(data.isToggleable)
+    var holdClickCps by mutableStateOf(data.holdClickCps)
 
     override val behavior: InteractionBehavior
         get() = InteractionBehavior.from(
@@ -61,6 +70,9 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
      */
     var isPressed by mutableStateOf(false)
         private set
+
+    private val autoClickScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var autoClickJob: Job? = null
 
     /**
      * 开始触摸事件处理
@@ -76,21 +88,36 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
                 isPressed = true
             }
         }
-        eventHandler.onKeyPressed(clickEvents, isPressed) { event ->
-            eventHandler.onSwitchLayer(
-                clickEvent = event,
-                allLayers = allLayers,
-                switch = { layer ->
-                    layer.hide = !layer.hide
-                },
-                show = { layer ->
-                    layer.hide = false
-                },
-                hide = { layer ->
-                    layer.hide = true
+
+        // If hold-click CPS is enabled and this isn't a toggle, run auto-click loop
+        if (holdClickCps > 0 && behavior !is InteractionBehavior.Toggle) {
+            autoClickJob?.cancel()
+            autoClickJob = autoClickScope.launch {
+                val halfInterval = (500L / holdClickCps).coerceAtLeast(10L)
+                while (isActive && isPressed) {
+                    eventHandler.onKeyPressed(clickEvents, true) { event -> !event.isAboutLayers() }
+                    delay(halfInterval)
+                    eventHandler.onKeyPressed(clickEvents, false) { event -> !event.isAboutLayers() }
+                    delay(halfInterval)
                 }
-            )
-            true
+            }
+        } else {
+            eventHandler.onKeyPressed(clickEvents, isPressed) { event ->
+                eventHandler.onSwitchLayer(
+                    clickEvent = event,
+                    allLayers = allLayers,
+                    switch = { layer ->
+                        layer.hide = !layer.hide
+                    },
+                    show = { layer ->
+                        layer.hide = false
+                    },
+                    hide = { layer ->
+                        layer.hide = true
+                    }
+                )
+                true
+            }
         }
     }
 
@@ -116,6 +143,9 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     }
 
     override fun onCompositionDispose(eventHandler: EventHandler?) {
+        autoClickJob?.cancel()
+        autoClickJob = null
+        autoClickScope.cancel()
         if (isPressed) {
             //fix: 若本身未按下，不应该输出抬起事件
             isPressed = false
@@ -176,6 +206,8 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         eventHandler: EventHandler,
         allLayers: List<ObservableControlLayer>
     ) {
+        autoClickJob?.cancel()
+        autoClickJob = null
         if (behavior is InteractionBehavior.Toggle || !isPressed) return
         isPressed = false
         eventHandler.onKeyPressed(clickEvents, isPressed)
@@ -222,7 +254,8 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
             _clickEvents = clickEvents.filterValidEvent(),
             isSwipple = isSwipple,
             isPenetrable = isPenetrable,
-            isToggleable = isToggleable
+            isToggleable = isToggleable,
+            holdClickCps = holdClickCps
         )
     }
 }
