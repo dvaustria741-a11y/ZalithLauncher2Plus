@@ -65,7 +65,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 分辨率
      */
-    val resolutionRatio = intSetting("resolutionRatio", 100, 25..300)
+    val resolutionRatio = intSetting("resolutionRatio", 85, 25..300)
 
     /**
      * 游戏页面全屏化
@@ -80,7 +80,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 持续性能模式
      */
-    val sustainedPerformance = boolSetting("sustainedPerformance", false)
+    val sustainedPerformance = boolSetting("sustainedPerformance", true)
 
     /**
      * 使用系统的 Vulkan 驱动
@@ -95,7 +95,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 强制在高性能核心运行
      */
-    val bigCoreAffinity = boolSetting("bigCoreAffinity", false)
+    val bigCoreAffinity = boolSetting("bigCoreAffinity", true)
 
     /**
      * 启用着色器日志输出
