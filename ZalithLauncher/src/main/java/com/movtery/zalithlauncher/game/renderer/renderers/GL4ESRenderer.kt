@@ -29,7 +29,14 @@ object GL4ESRenderer : RendererInterface {
 
     override fun getMaxMCVersion(): String = "1.21.4"
 
-    override fun getRendererEnv(): Lazy<Map<String, String>> = lazy { emptyMap() }
+    override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
+        mapOf(
+            "LIBGL_MIPMAP" to "3",
+            "LIBGL_NORMALIZE" to "1",
+            "LIBGL_NOBANNER" to "1",
+            "LIBGL_NOERROR" to "1"
+        )
+    }
 
     override fun getDlopenLibrary(): Lazy<List<String>> = lazy { emptyList() }
 
