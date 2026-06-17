@@ -175,6 +175,17 @@ private fun EditBasicEvent(
     ) {
         Spacer(Modifier)
 
+        //不透明度
+        InfoLayoutSliderItem(
+            modifier = Modifier.fillMaxWidth(),
+            title = stringResource(R.string.control_editor_edit_event_opacity),
+            value = data.opacity * 100f,
+            onValueChange = { data.opacity = (it / 100f).coerceIn(0f, 1f) },
+            valueRange = 0f..100f,
+            decimalFormat = "#0",
+            suffix = "%"
+        )
+
         //滑动触发
         InfoLayoutSwitchItem(
             modifier = Modifier.fillMaxWidth(),
@@ -221,7 +232,7 @@ private fun EditBasicEvent(
                 title = stringResource(R.string.control_editor_edit_event_hold_click_cps),
                 value = data.holdClickCps.toFloat(),
                 onValueChange = { data.holdClickCps = it.toInt() },
-                valueRange = 1f..30f,
+                valueRange = 1f..50f,
                 suffix = " CPS"
             )
         }
