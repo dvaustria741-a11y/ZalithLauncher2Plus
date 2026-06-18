@@ -19,6 +19,7 @@
 package com.movtery.zalithlauncher.game.renderer.renderers
 
 import com.movtery.zalithlauncher.game.renderer.RendererInterface
+import com.movtery.zalithlauncher.utils.settings.VulkanZinkConfig
 
 object VulkanZinkRenderer : RendererInterface {
     override fun getRendererId(): String = "vulkan_zink"
@@ -28,14 +29,17 @@ object VulkanZinkRenderer : RendererInterface {
     override fun getRendererName(): String = "Vulkan Zink"
 
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
-        mapOf(
-            "MESA_GL_VERSION_OVERRIDE" to "4.6",
-            "MESA_GLSL_VERSION_OVERRIDE" to "460",
-            "MESA_NO_ERROR" to "1",
-            "LIBGL_MIPMAP" to "3",
-            "MESA_GLTHREAD" to "true",
-            "mesa_glthread" to "true"
-        )
+        val cfg = VulkanZinkConfig.load() ?: VulkanZinkConfig()
+        buildMap {
+            put("MESA_GL_VERSION_OVERRIDE",   cfg.glVersionOverride)
+            put("MESA_GLSL_VERSION_OVERRIDE", cfg.glslVersionOverride)
+            if (cfg.noError)  put("MESA_NO_ERROR", "1")
+            put("LIBGL_MIPMAP", cfg.mipmapLevel.toString())
+            if (cfg.glThread) {
+                put("MESA_GLTHREAD", "true")
+                put("mesa_glthread",  "true")
+            }
+        }
     }
 
     override fun getDlopenLibrary(): Lazy<List<String>> = lazy { emptyList() }
