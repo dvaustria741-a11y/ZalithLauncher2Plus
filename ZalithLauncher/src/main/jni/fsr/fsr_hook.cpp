@@ -86,8 +86,13 @@ static void* resolveFromGLES(const char* name) {
     return sym;
 }
 
-static void getRealGLFunctions() {
-    if (real_glBindFramebuffer) return;
+/*
+ * Returns true if all real GL function pointers were successfully resolved.
+ * Resets all pointers to nullptr and returns false if any are missing,
+ * so the next call can retry resolution (e.g. after the GL context is ready).
+ */
+static bool getRealGLFunctions() {
+    if (real_glBindFramebuffer) return true; // already resolved successfully
     real_glBindFramebuffer  = (void (*)(GLenum, GLuint))         resolveFromGLES("glBindFramebuffer");
     real_glViewport         = (void (*)(GLint, GLint, GLsizei, GLsizei)) resolveFromGLES("glViewport");
     real_glGetIntegerv      = (void (*)(GLenum, GLint*))          resolveFromGLES("glGetIntegerv");
@@ -98,8 +103,18 @@ static void getRealGLFunctions() {
     if (!real_glBindFramebuffer || !real_glViewport || !real_glGetIntegerv ||
         !real_glGenVertexArrays || !real_glBindVertexArray ||
         !real_glDeleteVertexArrays || !real_glBlitFramebuffer) {
-        LOGE("Failed to resolve real GL functions");
+        LOGE("FSR: failed to resolve real GL functions — aborting hook installation");
+        // Reset all to nullptr so a future call can retry once the GL context is ready
+        real_glBindFramebuffer    = nullptr;
+        real_glViewport           = nullptr;
+        real_glGetIntegerv        = nullptr;
+        real_glGenVertexArrays    = nullptr;
+        real_glBindVertexArray    = nullptr;
+        real_glDeleteVertexArrays = nullptr;
+        real_glBlitFramebuffer    = nullptr;
+        return false;
     }
+    return true;
 }
 
 /*
@@ -117,8 +132,15 @@ extern "C" void* hook_eglGetProcAddress(const char* name) {
 /*
  * Exported wrapper — when the game binds framebuffer 0 (the default / EGL surface),
  * redirect to our lower-resolution render FBO so the game renders at reduced resolution.
+ *
+ * Safety: guard against null real_glBindFramebuffer in case hooks fired before
+ * GL resolution completed (e.g. during EGL context setup with MobileGlues/ANGLE).
  */
 extern "C" void glBindFramebuffer(GLenum target, GLuint framebuffer) {
+    if (!real_glBindFramebuffer) {
+        getRealGLFunctions();
+        if (!real_glBindFramebuffer) return;
+    }
     if (g_active && g_renderFBO != 0 && framebuffer == 0) {
         real_glBindFramebuffer(target, g_renderFBO);
         return;
@@ -130,8 +152,14 @@ extern "C" void glBindFramebuffer(GLenum target, GLuint framebuffer) {
  * Exported wrapper — clamp viewport to the render resolution when FSR is active.
  * This ensures the rasterizer only generates fragments within the lower-res FBO,
  * delivering the full FPS gain from reduced pixel processing.
+ *
+ * Safety: guard against null real_glViewport (same timing issue as glBindFramebuffer).
  */
 extern "C" void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+    if (!real_glViewport) {
+        getRealGLFunctions();
+        if (!real_glViewport) return;
+    }
     if (g_active) {
         GLsizei maxW = (GLsizei)g_renderWidth - x;
         GLsizei maxH = (GLsizei)g_renderHeight - y;
@@ -148,8 +176,16 @@ extern "C" void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 /*
  * Exported wrapper — spoof GL_FRAMEBUFFER_BINDING queries so the game always sees 0
  * when our redirect FBO is active. This prevents state save/restore breakage.
+ *
+ * Safety: guard against null real_glGetIntegerv. This is the function that was crashing
+ * (SIGSEGV at pc=0x0 in glGetIntegerv+0x1c) when hooks fired before MobileGlues/ANGLE
+ * had finished binding its GL entry points.
  */
 extern "C" void glGetIntegerv(GLenum pname, GLint* data) {
+    if (!real_glGetIntegerv) {
+        getRealGLFunctions();
+        if (!real_glGetIntegerv) return;
+    }
     real_glGetIntegerv(pname, data);
     if (g_active && g_renderFBO != 0) {
         if (pname == GL_FRAMEBUFFER_BINDING &&
@@ -298,7 +334,16 @@ extern "C" void fsr_init(int qualityPreset) {
         return;
     }
 
-    getRealGLFunctions();
+    // Resolve real GL function pointers before installing any hooks.
+    // If resolution fails (e.g. MobileGlues/ANGLE hasn't finished binding yet),
+    // abort entirely — installing hooks with null pointers causes SIGSEGV
+    // when EGLBridge internally calls glGetIntegerv during context setup.
+    if (!getRealGLFunctions()) {
+        LOGE("FSR: GL function resolution failed — FSR disabled to prevent crash");
+        g_initialized = true;
+        return;
+    }
+
     if (!g_hooksActive) {
         g_hooksActive = initHooks();
     }
