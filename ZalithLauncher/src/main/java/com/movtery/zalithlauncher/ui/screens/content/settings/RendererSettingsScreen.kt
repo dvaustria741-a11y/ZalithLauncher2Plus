@@ -91,10 +91,15 @@ fun RendererSettingsScreen(
     ) { isVisible ->
         val context = LocalContext.current
         var showMobileGluesSettings by remember { mutableStateOf(false) }
+        var showVulkanZinkSettings by remember { mutableStateOf(false) }
         var driverToDelete by remember { mutableStateOf<Driver?>(null) }
 
         if (showMobileGluesSettings) {
             MobileGluesSettingsDialog(onDismissRequest = { showMobileGluesSettings = false })
+        }
+
+        if (showVulkanZinkSettings) {
+            VulkanZinkSettingsDialog(onDismissRequest = { showVulkanZinkSettings = false })
         }
 
         driverToDelete?.let { driver ->
@@ -140,13 +145,20 @@ fun RendererSettingsScreen(
                             RendererSummaryLayout(it)
                         },
                         getItemTrailing = { renderer ->
-                            if (renderer.getRendererName() == "MobileGlues") {
-                                IconButton(onClick = { showMobileGluesSettings = true }) {
+                            when (renderer.getRendererName()) {
+                                "MobileGlues" -> IconButton(onClick = { showMobileGluesSettings = true }) {
                                     Icon(
                                         painter = painterResource(R.drawable.ic_settings_filled),
                                         contentDescription = stringResource(R.string.generic_setting)
                                     )
                                 }
+                                "Vulkan Zink" -> IconButton(onClick = { showVulkanZinkSettings = true }) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting)
+                                    )
+                                }
+                                else -> {}
                             }
                         },
                         trailingIcon = {
