@@ -92,6 +92,10 @@ fun RendererSettingsScreen(
         val context = LocalContext.current
         var showMobileGluesSettings by remember { mutableStateOf(false) }
         var showVulkanZinkSettings by remember { mutableStateOf(false) }
+        var showGL4ESSettings by remember { mutableStateOf(false) }
+        var showKryptonSettings by remember { mutableStateOf(false) }
+        var showFreedrenoSettings by remember { mutableStateOf(false) }
+        var showPanfrostSettings by remember { mutableStateOf(false) }
         var driverToDelete by remember { mutableStateOf<Driver?>(null) }
 
         if (showMobileGluesSettings) {
@@ -100,6 +104,22 @@ fun RendererSettingsScreen(
 
         if (showVulkanZinkSettings) {
             VulkanZinkSettingsDialog(onDismissRequest = { showVulkanZinkSettings = false })
+        }
+
+        if (showGL4ESSettings) {
+            GL4ESSettingsDialog(onDismissRequest = { showGL4ESSettings = false })
+        }
+
+        if (showKryptonSettings) {
+            KryptonWrapperSettingsDialog(onDismissRequest = { showKryptonSettings = false })
+        }
+
+        if (showFreedrenoSettings) {
+            FreedrenoSettingsDialog(onDismissRequest = { showFreedrenoSettings = false })
+        }
+
+        if (showPanfrostSettings) {
+            PanfrostSettingsDialog(onDismissRequest = { showPanfrostSettings = false })
         }
 
         driverToDelete?.let { driver ->
@@ -147,16 +167,28 @@ fun RendererSettingsScreen(
                         getItemTrailing = { renderer ->
                             when (renderer.getRendererName()) {
                                 "MobileGlues" -> IconButton(onClick = { showMobileGluesSettings = true }) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_settings_filled),
-                                        contentDescription = stringResource(R.string.generic_setting)
-                                    )
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
                                 }
                                 "Vulkan Zink" -> IconButton(onClick = { showVulkanZinkSettings = true }) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_settings_filled),
-                                        contentDescription = stringResource(R.string.generic_setting)
-                                    )
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
+                                }
+                                "GL4ES" -> IconButton(onClick = { showGL4ESSettings = true }) {
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
+                                }
+                                "Krypton Wrapper" -> IconButton(onClick = { showKryptonSettings = true }) {
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
+                                }
+                                "Freedreno (Adreno)" -> IconButton(onClick = { showFreedrenoSettings = true }) {
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
+                                }
+                                "Panfrost (Mali)" -> IconButton(onClick = { showPanfrostSettings = true }) {
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
                                 }
                                 else -> {}
                             }
