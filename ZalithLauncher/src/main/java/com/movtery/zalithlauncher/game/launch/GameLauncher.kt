@@ -201,6 +201,13 @@ class GameLauncher(
         super.progressFinalUserArgs(args, version.getRamAllocation(activity))
         if (Renderers.isCurrentRendererValid()) {
             args.add("-Dorg.lwjgl.opengl.libname=${loadGraphicsLibrary()}")
+            // MC 26.2+ ships LWJGL 3.3.6 whose Library.loadNative() no longer searches
+            // java.library.path for renderer .so files the same way older LWJGL did.
+            // Setting org.lwjgl.librarypath tells LWJGL exactly which directory to scan,
+            // fixing "Failed to locate library: libMobileGlues.so" (and any other renderer).
+            val rendererLibDir = RendererPluginManager.selectedRendererPlugin?.path
+                ?: PathManager.DIR_NATIVE_LIB
+            args.add("-Dorg.lwjgl.librarypath=$rendererLibDir")
         }
     }
 
