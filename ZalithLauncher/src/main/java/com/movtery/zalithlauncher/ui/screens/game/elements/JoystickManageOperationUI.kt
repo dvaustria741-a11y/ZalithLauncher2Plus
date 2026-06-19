@@ -341,6 +341,17 @@ private fun JoystickManageDialog(
                                 },
                                 enabled = AllSettings.enableJoystickControl.state && AllSettings.joystickControlCanLock.state
                             )
+
+                            //自动疾跑 — 摇杆前进时持续按下 Left Control (sprint)
+                            InfoLayoutSwitchItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                title = stringResource(R.string.game_styles_joystick_auto_sprint),
+                                value = AllSettings.joystickAutoSprint.state,
+                                onValueChange = {
+                                    AllSettings.joystickAutoSprint.save(it)
+                                },
+                                enabled = AllSettings.enableJoystickControl.state
+                            )
                         }
 
                         Row(
