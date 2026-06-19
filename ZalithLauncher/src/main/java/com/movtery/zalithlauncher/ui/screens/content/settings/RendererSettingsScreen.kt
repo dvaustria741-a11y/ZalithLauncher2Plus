@@ -174,6 +174,10 @@ fun RendererSettingsScreen(
                                     Icon(painter = painterResource(R.drawable.ic_settings_filled),
                                         contentDescription = stringResource(R.string.generic_setting))
                                 }
+                                "Kopper Zink (Vulkan)" -> IconButton(onClick = { showVulkanZinkSettings = true }) {
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
+                                }
                                 "GL4ES" -> IconButton(onClick = { showGL4ESSettings = true }) {
                                     Icon(painter = painterResource(R.drawable.ic_settings_filled),
                                         contentDescription = stringResource(R.string.generic_setting))
