@@ -20,6 +20,10 @@ object NGGL4ESRenderer : RendererInterface {
             put("LIBGL_ES",   cfg.esVersion.toString())
             if (cfg.normalize) put("LIBGL_NORMALIZE", "1")
             if (cfg.noError)   put("LIBGL_NOERROR",   "1")
+            // Prevents shader override hack that crashes on certain GLES drivers (from Amethyst)
+            put("LIBGL_NOINTOVLHACK", "1")
+            // Trilinear mipmap for texture quality
+            put("LIBGL_MIPMAP", "3")
         }
     }
 
