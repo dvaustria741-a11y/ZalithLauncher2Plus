@@ -457,6 +457,7 @@
     <string name="game_styles_joystick_lock_threshold">Joystick Forward Lock Threshold</string>
     <string name="game_styles_joystick_can_lock">Forward Lock</string>
     <string name="game_styles_joystick_lock_sprint">Force Sprint When Locked</string>
+    <string name="game_styles_joystick_auto_sprint">Auto Sprint</string>
     <string name="game_styles_joystick_hide_when_mouse">Hide When Using Physical Mouse</string>
     <string name="game_styles_joystick_hide_when_gamepad">Hide When Using Gamepad</string>
     <string name="game_styles_save_failed">Failed to Save Style</string>
