@@ -174,7 +174,7 @@ fun JoystickDirectionListener(
             val hasForward = direction == JoystickDirection.North ||
                              direction == JoystickDirection.NorthEast ||
                              direction == JoystickDirection.NorthWest
-            if (AllSettings.joystickAutoSprint.value && hasForward) {
+            if (AllSettings.joystickAutoSprint.getValue() && hasForward) {
                 sendKeyEvent(SPRING, SPRING_VALUE, true)
             }
         },
