@@ -15,15 +15,12 @@ object KopperZinkRenderer : RendererInterface {
 
     override fun getRendererName(): String = "Kopper Zink (Vulkan)"
 
-    // Kopper needs Mesa's EGL to bind the desktop GL API (eglBindAPI(EGL_OPENGL_API)).
-    // On some Adreno devices/driver builds that bind fails (EGL_BAD_PARAMETER) and silently
-    // falls back to the native vendor GLES driver instead, which doesn't implement the
-    // desktop-only GL calls Minecraft's renderer always makes — this crashes on first texture
-    // creation ("OpenGL error 1281: non-compressed internal format is invalid") during init.
-    // Seen on: Adreno 619. If startup crashes here, try "Vulkan Zink" instead.
+    // Kopper Zink: uses Mesa EGL for eglBindAPI(EGL_OPENGL_API), but on some Adreno devices
+    // that bind fails (EGL_BAD_PARAMETER). The launcher now routes Kopper through the
+    // Vulkan/Zink OSMesa path (same as Vulkan Zink) to bypass the EGL binding issue entirely.
     override fun getRendererSummary(): String =
-        "Experimental — may fail to initialize on some Adreno devices and crash during startup. " +
-        "If that happens, try \"Vulkan Zink\" instead."
+        "Vulkan-backed renderer using Mesa Zink. Routes through the OSMesa path on Adreno to " +
+        "avoid EGL OpenGL API binding failures. Falls back gracefully like Vulkan Zink."
 
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
         val cfg = VulkanZinkConfig.load() ?: VulkanZinkConfig()
@@ -59,6 +56,7 @@ object KopperZinkRenderer : RendererInterface {
 
     override fun getDlopenLibrary(): Lazy<List<String>> = lazy { emptyList() }
 
-    // libglxshim.so is the Kopper/Mesa-EGL GLX shim — bypasses Android EGL for Vulkan WSI
-    override fun getRendererLibrary(): String = "libglxshim.so"
+    // Use libOSMesa_8.so: Kopper now routes through the OSMesa/Zink path (see egl_bridge.c),
+    // so the renderer library must match — libglxshim.so would conflict with OSMesa GL dispatch.
+    override fun getRendererLibrary(): String = "libOSMesa_8.so"
 }
