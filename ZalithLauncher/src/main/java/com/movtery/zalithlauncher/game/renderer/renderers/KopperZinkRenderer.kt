@@ -19,13 +19,25 @@ object KopperZinkRenderer : RendererInterface {
         val cfg = VulkanZinkConfig.load() ?: VulkanZinkConfig()
         val cacheDir = "${Environment.getExternalStorageDirectory().absolutePath}/.cache/mesa"
         buildMap {
-            // Use Mesa's own EGL instead of Android system EGL — key to Kopper WSI path
+            // Use Mesa's own EGL — enables the Kopper WSI path directly to Vulkan
             put("POJAVEXEC_EGL", "libEGL_mesa.so")
+
+            // Explicitly set to 3 — prevents the launcher auto-deriving the garbage value
+            // "3_desktopgl_zink_kopper" from the renderer ID string (GameLauncher line 409)
+            put("LIBGL_ES", "3")
+
             put("MESA_GL_VERSION_OVERRIDE",   cfg.glVersionOverride)
             put("MESA_GLSL_VERSION_OVERRIDE", cfg.glslVersionOverride)
             put("MESA_LOADER_DRIVER_OVERRIDE", "zink")
             put("MESA_GLSL_CACHE_DIR",  cacheDir)
             put("MESA_SHADER_CACHE_DIR", cacheDir)
+
+            // GLSL extension vars — normally only set for non-opengles renderers by the launcher
+            // (GameLauncher.setRendererEnv line 392) but skipped because our ID starts with opengles
+            put("force_glsl_extensions_warn",             "true")
+            put("allow_higher_compat_version",            "true")
+            put("allow_glsl_extension_directive_midshader", "true")
+
             if (cfg.noError)  put("MESA_NO_ERROR", "1")
             put("LIBGL_MIPMAP", cfg.mipmapLevel.toString())
             if (cfg.glThread) {
