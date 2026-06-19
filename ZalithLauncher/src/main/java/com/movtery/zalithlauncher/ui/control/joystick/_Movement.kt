@@ -33,7 +33,10 @@ import com.movtery.zalithlauncher.game.keycodes.MOVEMENT_LEFT
 import com.movtery.zalithlauncher.game.keycodes.MOVEMENT_LEFT_VALUE
 import com.movtery.zalithlauncher.game.keycodes.MOVEMENT_RIGHT
 import com.movtery.zalithlauncher.game.keycodes.MOVEMENT_RIGHT_VALUE
+import com.movtery.zalithlauncher.game.keycodes.SPRING
+import com.movtery.zalithlauncher.game.keycodes.SPRING_VALUE
 import com.movtery.zalithlauncher.game.keycodes.mapToControlEvent
+import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.viewmodel.JoystickMovementViewModel
 
 /**
@@ -160,8 +163,19 @@ fun JoystickDirectionListener(
                 sendKeyEvent(key, defaultValue, false)
             }
 
+            // Release sprint before re-evaluating so it doesn't get stuck held
+            sendKeyEvent(SPRING, SPRING_VALUE, false)
+
             directionMapping[direction]?.forEach { (key, defaultValue) ->
                 sendKeyEvent(key, defaultValue, true)
+            }
+
+            // Auto sprint: hold Left Control whenever the joystick has any forward component
+            val hasForward = direction == JoystickDirection.North ||
+                             direction == JoystickDirection.NorthEast ||
+                             direction == JoystickDirection.NorthWest
+            if (AllSettings.joystickAutoSprint.value && hasForward) {
+                sendKeyEvent(SPRING, SPRING_VALUE, true)
             }
         },
         onDisposeCallback = {
