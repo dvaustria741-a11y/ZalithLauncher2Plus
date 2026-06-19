@@ -57,6 +57,7 @@ object Renderers {
             NGGL4ESRenderer,
             GL4ESRenderer,
             VulkanZinkRenderer,
+        KopperZinkRenderer,
             MobileGluesRenderer,
             VirGLRenderer,
             FreedrenoRenderer,
