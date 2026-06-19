@@ -15,6 +15,16 @@ object KopperZinkRenderer : RendererInterface {
 
     override fun getRendererName(): String = "Kopper Zink (Vulkan)"
 
+    // Kopper needs Mesa's EGL to bind the desktop GL API (eglBindAPI(EGL_OPENGL_API)).
+    // On some Adreno devices/driver builds that bind fails (EGL_BAD_PARAMETER) and silently
+    // falls back to the native vendor GLES driver instead, which doesn't implement the
+    // desktop-only GL calls Minecraft's renderer always makes — this crashes on first texture
+    // creation ("OpenGL error 1281: non-compressed internal format is invalid") during init.
+    // Seen on: Adreno 619. If startup crashes here, try "Vulkan Zink" instead.
+    override fun getRendererSummary(): String =
+        "Experimental — may fail to initialize on some Adreno devices and crash during startup. " +
+        "If that happens, try \"Vulkan Zink\" instead."
+
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
         val cfg = VulkanZinkConfig.load() ?: VulkanZinkConfig()
         val cacheDir = "${Environment.getExternalStorageDirectory().absolutePath}/.cache/mesa"
