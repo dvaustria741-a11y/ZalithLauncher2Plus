@@ -15,12 +15,13 @@ class VulkanZinkConfig private constructor(private var isInitializing: Boolean) 
     constructor() : this(false)
 
     /** MESA_GL_VERSION_OVERRIDE – e.g. "4.6" */
-    var glVersionOverride: String = "4.6"
+    var glVersionOverride: String = "4.6COMPAT"
         set(value) { if (field != value) { field = value; saveIfReady() } }
 
     /** Derived automatically from glVersionOverride */
+    /** Derived from the numeric portion of glVersionOverride (strips COMPAT suffix) */
     val glslVersionOverride: String
-        get() = glVersionOverride.replace(".", "") + "0"   // "4.6" → "460"
+        get() = glVersionOverride.replace("COMPAT", "").replace(".", "") + "0"
 
     /** MESA_NO_ERROR – skip GL error checking for performance */
     var noError: Boolean = true
@@ -63,7 +64,7 @@ class VulkanZinkConfig private constructor(private var isInitializing: Boolean) 
                 fun JsonObject.str(k: String, d: String) = get(k)?.asString ?: d
                 fun JsonObject.bool(k: String, d: Boolean) = get(k)?.asBoolean ?: d
                 fun JsonObject.int(k: String, d: Int) = get(k)?.asInt ?: d
-                cfg.glVersionOverride = obj.str("glVersionOverride", "4.6")
+                cfg.glVersionOverride = obj.str("glVersionOverride", "4.6COMPAT")
                 cfg.noError           = obj.bool("noError", true)
                 cfg.mipmapLevel       = obj.int("mipmapLevel", 3)
                 cfg.glThread          = obj.bool("glThread", true)
