@@ -36,6 +36,7 @@
 #include "logger/logger.h"
 #include "utils.h"
 #include "environ/environ.h"
+#include "bigcoreaffinity.h"
 
 // Uncomment to try redirect signal handling to JVM
 // #define TRY_SIG2JVM
@@ -173,6 +174,14 @@ JNIEXPORT jint JNICALL Java_com_oracle_dalvik_VMLauncher_launchJVM(JNIEnv *env, 
 
     // Save dalvik JNIEnv pointer for JVM launch thread
     pojav_environ->dalvikJNIEnvPtr_ANDROID = env;
+
+    // ZalithLauncher2Plus: apply CPU affinity to the performance cluster
+    // before the JVM spins up, so its threads inherit it too.
+    const char* big_core_affinity = getenv("POJAV_BIG_CORE_AFFINITY");
+    if (big_core_affinity != NULL && strcmp(big_core_affinity, "1") == 0) {
+        LOG_TO_D("Applying performance-cluster CPU affinity");
+        bigcore_set_affinity();
+    }
 
     if (argsArray == NULL)
     {
