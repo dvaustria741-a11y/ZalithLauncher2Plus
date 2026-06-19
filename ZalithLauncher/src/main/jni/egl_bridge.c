@@ -121,7 +121,19 @@ void load_vulkan() {
 int pojavInitOpenGL() {
     const char *renderer = getenv("POJAV_RENDERER");
 
-    if (!strncmp("opengles", renderer, 8))
+    // Kopper Zink: renderer ID starts with "opengles" but needs the Vulkan/Zink OSMesa path.
+    // On Adreno 619 (and similar), Mesa EGL's eglBindAPI(EGL_OPENGL_API) returns EGL_BAD_PARAMETER,
+    // so the EGL GL4ES bridge creates a GLES3 context instead of a desktop GL context.
+    // This causes GL_INVALID_VALUE (1281) on desktop-only texture formats during Minecraft init.
+    // Fix: route Kopper through RENDERER_VK_ZINK + OSMesa (same as vulkan_zink) to bypass EGL binding.
+    if (!strcmp(renderer, "opengles3_desktopgl_zink_kopper"))
+    {
+        pojav_environ->config_renderer = RENDERER_VK_ZINK;
+        load_vulkan();
+        setenv("GALLIUM_DRIVER", "zink", 1);
+        set_osm_bridge_tbl();
+    }
+    else if (!strncmp("opengles", renderer, 8))
     {
         pojav_environ->config_renderer = RENDERER_GL4ES;
         set_gl_bridge_tbl();
