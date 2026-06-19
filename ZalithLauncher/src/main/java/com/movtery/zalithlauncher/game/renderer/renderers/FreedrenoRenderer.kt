@@ -4,6 +4,7 @@
 
 package com.movtery.zalithlauncher.game.renderer.renderers
 
+import android.os.Environment
 import com.movtery.zalithlauncher.game.renderer.RendererInterface
 import com.movtery.zalithlauncher.utils.settings.FreedrenoConfig
 
@@ -14,9 +15,12 @@ object FreedrenoRenderer : RendererInterface {
 
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
         val cfg = FreedrenoConfig.load() ?: FreedrenoConfig()
+        val cacheDir = "${Environment.getExternalStorageDirectory().absolutePath}/.cache/mesa"
         buildMap {
             put("MESA_GL_VERSION_OVERRIDE",   cfg.glVersionOverride)
             put("MESA_GLSL_VERSION_OVERRIDE", cfg.glslVersionOverride)
+            put("MESA_GLSL_CACHE_DIR",  cacheDir)
+            put("MESA_SHADER_CACHE_DIR", cacheDir)
             if (cfg.noError)  put("MESA_NO_ERROR", "1")
             put("LIBGL_MIPMAP", cfg.mipmapLevel.toString())
             if (cfg.glThread) {
