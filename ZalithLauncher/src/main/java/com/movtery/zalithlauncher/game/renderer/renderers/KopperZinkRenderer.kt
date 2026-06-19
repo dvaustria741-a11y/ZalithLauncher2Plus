@@ -35,6 +35,10 @@ object KopperZinkRenderer : RendererInterface {
 
             put("MESA_GL_VERSION_OVERRIDE",   cfg.glVersionOverride)
             put("MESA_GLSL_VERSION_OVERRIDE", cfg.glslVersionOverride)
+            // LIB_MESA_NAME must be set explicitly: GameLauncher.kt only injects it
+            // for non-opengles renderer IDs, but our ID starts with "opengles", so
+            // osmesa_loader.c would read getenv("LIB_MESA_NAME") as NULL and abort.
+            put("LIB_MESA_NAME", "libOSMesa_8.so")
             put("MESA_LOADER_DRIVER_OVERRIDE", "zink")
             put("MESA_GLSL_CACHE_DIR",  cacheDir)
             put("MESA_SHADER_CACHE_DIR", cacheDir)
