@@ -52,7 +52,7 @@ fun VulkanZinkSettingsDialog(onDismissRequest: () -> Unit) {
     var mipmapLevel  by remember { mutableIntStateOf(config.mipmapLevel) }
     var glThread     by remember { mutableStateOf(config.glThread) }
 
-    val glVersionOptions = listOf("4.1", "4.2", "4.3", "4.4", "4.5", "4.6")
+    val glVersionOptions = listOf("4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.6COMPAT")
 
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
