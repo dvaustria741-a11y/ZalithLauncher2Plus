@@ -609,6 +609,11 @@ object AllSettings : SettingsRegistry() {
     val joystickControlLockSpring = boolSetting("joystickControlLockSpring", true)
 
     /**
+     * Auto sprint — holds Left Control (sprint key) whenever the joystick moves forward.
+     */
+    val joystickAutoSprint = boolSetting("joystickAutoSprint", false)
+
+    /**
      * 上次检查更新的时间戳
      */
     val lastUpgradeCheck = longSetting("lastUpgradeCheck", 0L)
