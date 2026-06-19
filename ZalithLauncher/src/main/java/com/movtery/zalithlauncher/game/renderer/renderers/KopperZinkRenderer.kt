@@ -1,4 +1,4 @@
-/*
+ /*
  * Zalith Launcher 2 Plus
  */
 
@@ -19,7 +19,7 @@ object KopperZinkRenderer : RendererInterface {
         val cfg = VulkanZinkConfig.load() ?: VulkanZinkConfig()
         val cacheDir = "${Environment.getExternalStorageDirectory().absolutePath}/.cache/mesa"
         buildMap {
-            // Use Mesa's own EGL — enables the Kopper WSI path directly to Vulkan
+            // Use Mesa\'s own EGL — enables the Kopper WSI path directly to Vulkan
             put("POJAVEXEC_EGL", "libEGL_mesa.so")
 
             // Explicitly set to 3 — prevents the launcher auto-deriving the garbage value
