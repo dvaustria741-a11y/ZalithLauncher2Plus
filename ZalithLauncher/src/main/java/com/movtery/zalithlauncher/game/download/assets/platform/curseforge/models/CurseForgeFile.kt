@@ -185,11 +185,13 @@ class CurseForgeFile(
         @Serializable(with = Algo.Serializer::class)
         enum class Algo(val code: Int) {
             SHA1(1),
-            MD5(2);
+            MD5(2),
+            /** 未知的哈希算法代码，避免因 CurseForge 返回未列出的代码导致整个搜索请求崩溃 */
+            UNKNOWN(-1);
 
             companion object {
                 private val map = entries.associateBy { it.code }
-                fun fromCode(code: Int): Algo = map[code] ?: error("Unknown algo code: $code")
+                fun fromCode(code: Int): Algo = map[code] ?: UNKNOWN
             }
 
             object Serializer : KSerializer<Algo> {
