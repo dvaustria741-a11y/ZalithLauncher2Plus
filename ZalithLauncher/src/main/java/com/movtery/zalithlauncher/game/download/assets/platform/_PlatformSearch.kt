@@ -180,8 +180,9 @@ suspend fun searchAssets(
                 }
                 lastResult = r
                 if (r.getAssetsPage(platformClasses).data.isNotEmpty()) break
-            } catch (_: Exception) {
-                //当前关键词搜索失败，继续尝试下一个
+            } catch (e: Exception) {
+                //当前关键词搜索失败，继续尝试下一个，但记录下原始异常以便排查
+                Logger.warning(TAG, "Query \"$query\" failed while searching $platformClasses on $searchPlatform", e)
             }
         }
 
