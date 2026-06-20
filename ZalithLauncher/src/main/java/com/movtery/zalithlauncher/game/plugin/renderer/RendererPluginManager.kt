@@ -87,6 +87,18 @@ object RendererPluginManager: ApkPluginManager() {
     }
 
     /**
+     * Plugin packages with a confirmed native-crash track record on this fork, surfaced as a
+     * warning in the renderer summary instead of letting users hit them blind.
+     * com.bzlzhh.plugin.ngg / .angleless (Krypton Wrapper): SIGSEGV in libng_gl4es.so at renderer
+     * init on some Adreno devices, and separately a SIGSEGV in libc __memcpy ~1 min into gameplay
+     * under OptiFine/Iris + heavy mod load.
+     */
+    private val knownUnstablePlugins = setOf(
+        "com.bzlzhh.plugin.ngg",
+        "com.bzlzhh.plugin.ngg.angleless"
+    )
+
+    /**
      * 解析 ZalithLauncher、FCL 渲染器插件
      */
     override fun parseApkPlugin(
@@ -131,10 +143,17 @@ object RendererPluginManager: ApkPluginManager() {
                 val packageName = info.packageName
                 val appName = info.loadLabel(packageManager).toString()
 
+                val baseSummary = context.getString(R.string.settings_renderer_from_plugins, appName)
+                val summary = if (packageName in knownUnstablePlugins) {
+                    "$baseSummary — known to crash (native SIGSEGV) on some devices, especially under load. If you hit a startup or in-game crash, try a different renderer."
+                } else {
+                    baseSummary
+                }
+
                 val plugin = ApkRendererPlugin(
                     id = rendererId,
                     displayName = des,
-                    summary = context.getString(R.string.settings_renderer_from_plugins, appName),
+                    summary = summary,
                     minMCVer = metaData.getVersionString("minMCVer"),
                     maxMCVer = metaData.getVersionString("maxMCVer"),
                     uniqueIdentifier = packageName,
