@@ -58,7 +58,12 @@ enum class CurseForgeModLoader(val code: Int) : ModLoaderDisplayLabel {
 
     companion object {
         private val map = entries.associateBy { it.code }
-        fun fromCode(code: Int): CurseForgeModLoader = map[code] ?: error("Unknown mod loader code: $code")
+        /**
+         * 部分资源（例如存档/Worlds）没有固定的模组加载器概念，CurseForge 可能返回
+         * 未在此枚举中列出的代码。遇到未知代码时不再抛出异常导致整个搜索请求失败，
+         * 而是安全回退到 [ANY]。
+         */
+        fun fromCode(code: Int): CurseForgeModLoader = map[code] ?: ANY
     }
 
     object Serializer : KSerializer<CurseForgeModLoader> {
