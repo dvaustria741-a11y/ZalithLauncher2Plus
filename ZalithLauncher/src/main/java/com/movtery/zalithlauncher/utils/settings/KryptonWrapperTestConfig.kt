@@ -42,8 +42,13 @@ class KryptonWrapperTestConfig private constructor(private var isInitializing: B
     var vsyncOff: Boolean = true
         set(value) { if (field != value) { field = value; saveIfReady() } }
 
-    /** LIBGL_BATCH – batches immediate-mode draw call emulation into fewer GPU submits */
-    var batch: Boolean = true
+    /**
+     * LIBGL_BATCH – batches immediate-mode draw call emulation into fewer GPU submits.
+     * Defaults to OFF: conflicts with Sodium/Indigo's persistent-VBO chunk rendering
+     * (observed native SIGSEGV inside libng_gl4es.so when combined with Sodium+Iris).
+     * Only enable on vanilla/lightly-modded clients without Sodium-family rendering mods.
+     */
+    var batch: Boolean = false
         set(value) { if (field != value) { field = value; saveIfReady() } }
 
     /** LIBGL_DEFERRED_FLUSH – number of draws to buffer before forcing a glFlush */
@@ -54,8 +59,12 @@ class KryptonWrapperTestConfig private constructor(private var isInitializing: B
     var useVAO: Boolean = true
         set(value) { if (field != value) { field = value; saveIfReady() } }
 
-    /** LIBGL_FBO – force the FBO offscreen path (2 = always use FBO) */
-    var fboMode: Int = 2
+    /**
+     * LIBGL_FBO – offscreen rendering path (0 = Auto, 1 = Prefer, 2 = Always force FBO).
+     * Defaults to Auto: forcing this with Sodium/Iris already managing their own
+     * framebuffers can corrupt GPU state and crash natively.
+     */
+    var fboMode: Int = 0
         set(value) { if (field != value) { field = value; saveIfReady() } }
 
     private fun saveIfReady() { if (!isInitializing) save() }
@@ -97,10 +106,10 @@ class KryptonWrapperTestConfig private constructor(private var isInitializing: B
                 cfg.normalize = obj.bool("normalize", true)
                 cfg.noError = obj.bool("noError", true)
                 cfg.vsyncOff = obj.bool("vsyncOff", true)
-                cfg.batch = obj.bool("batch", true)
+                cfg.batch = obj.bool("batch", false)
                 cfg.deferredFlush = obj.int("deferredFlush", 8)
                 cfg.useVAO = obj.bool("useVAO", true)
-                cfg.fboMode = obj.int("fboMode", 2)
+                cfg.fboMode = obj.int("fboMode", 0)
                 cfg.isInitializing = false
                 cfg
             }.getOrNull()
