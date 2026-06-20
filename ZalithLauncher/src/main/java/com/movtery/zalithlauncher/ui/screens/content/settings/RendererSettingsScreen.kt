@@ -96,6 +96,7 @@ fun RendererSettingsScreen(
         var showKryptonSettings by remember { mutableStateOf(false) }
         var showFreedrenoSettings by remember { mutableStateOf(false) }
         var showPanfrostSettings by remember { mutableStateOf(false) }
+        var showKryptonTestSettings by remember { mutableStateOf(false) }
         var driverToDelete by remember { mutableStateOf<Driver?>(null) }
 
         if (showMobileGluesSettings) {
@@ -120,6 +121,10 @@ fun RendererSettingsScreen(
 
         if (showPanfrostSettings) {
             PanfrostSettingsDialog(onDismissRequest = { showPanfrostSettings = false })
+        }
+
+        if (showKryptonTestSettings) {
+            KryptonWrapperTestSettingsDialog(onDismissRequest = { showKryptonTestSettings = false })
         }
 
         driverToDelete?.let { driver ->
@@ -191,6 +196,10 @@ fun RendererSettingsScreen(
                                         contentDescription = stringResource(R.string.generic_setting))
                                 }
                                 "Panfrost (Mali)" -> IconButton(onClick = { showPanfrostSettings = true }) {
+                                    Icon(painter = painterResource(R.drawable.ic_settings_filled),
+                                        contentDescription = stringResource(R.string.generic_setting))
+                                }
+                                "Krypton Wrapper (Test)" -> IconButton(onClick = { showKryptonTestSettings = true }) {
                                     Icon(painter = painterResource(R.drawable.ic_settings_filled),
                                         contentDescription = stringResource(R.string.generic_setting))
                                 }
