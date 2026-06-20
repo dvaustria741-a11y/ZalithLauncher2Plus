@@ -42,7 +42,11 @@ enum class PlatformReleaseType(val curseforgeCode: Int, val textRes: Int, val co
 
     companion object {
         private val map = PlatformReleaseType.entries.associateBy { it.curseforgeCode }
-        fun fromCurseForgeCode(code: Int): PlatformReleaseType = map[code] ?: error("Unknown release code: $code")
+        /**
+         * 遇到未知的发布类型代码时不再抛出异常导致整个搜索请求失败，
+         * 而是安全回退到 [RELEASE]。
+         */
+        fun fromCurseForgeCode(code: Int): PlatformReleaseType = map[code] ?: RELEASE
     }
 
     object Serializer : KSerializer<PlatformReleaseType> {
@@ -57,7 +61,7 @@ enum class PlatformReleaseType(val curseforgeCode: Int, val textRes: Int, val co
                         "release" -> RELEASE
                         "beta" -> BETA
                         "alpha" -> ALPHA
-                        else -> error("Unknown type name: $name")
+                        else -> RELEASE
                     }
                 }
                 else -> {
