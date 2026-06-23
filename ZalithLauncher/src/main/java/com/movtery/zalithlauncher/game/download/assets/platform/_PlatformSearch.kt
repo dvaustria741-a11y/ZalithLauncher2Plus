@@ -111,16 +111,12 @@ fun mirroredCurseForgeSource(
     enabledMirror: Boolean = isChinaMainland()
 ): List<CurseForgeSearcher> {
     val source = AllSettings.assetSearchSource.getValue()
-    // Always include MCIM mirror as fallback when no official API key is configured
-    val hasApiKey = !com.movtery.zalithlauncher.BuildKeys.CURSEFORGE_API.isNullOrBlank()
-    val mirrorSource = mirrorCurseForgeSearcher.takeIf { enabledMirror || !hasApiKey }
+    val mirrorSource = mirrorCurseForgeSearcher.takeIf { enabledMirror }
     return when (source) {
         MirrorSourceType.OFFICIAL_FIRST ->
-            listOfNotNull(curseForgeSearcher.takeIf { hasApiKey }, mirrorSource)
-                .ifEmpty { listOf(curseForgeSearcher) }
+            listOfNotNull(curseForgeSearcher, mirrorSource)
         MirrorSourceType.MIRROR_FIRST ->
-            listOfNotNull(mirrorSource, curseForgeSearcher.takeIf { hasApiKey })
-                .ifEmpty { listOf(curseForgeSearcher) }
+            listOfNotNull(mirrorSource, curseForgeSearcher)
     }
 }
 
