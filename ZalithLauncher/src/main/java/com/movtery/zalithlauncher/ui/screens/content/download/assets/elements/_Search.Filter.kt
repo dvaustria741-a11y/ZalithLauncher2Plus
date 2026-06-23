@@ -79,6 +79,7 @@ import com.movtery.zalithlauncher.game.download.assets.platform.PlatformDisplayL
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformFilterCode
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformSortField
 import com.movtery.zalithlauncher.R as ZR
+import com.movtery.zalithlauncher.R as ZR
 import com.movtery.zalithlauncher.game.download.assets.utils.ModTranslations
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.components.LittleTextLabel
@@ -197,6 +198,14 @@ fun SearchFilter(
                     onPlatformChange = onPlatformChange,
                 )
             }
+        }
+
+        item {
+            // Quick-filter chips: tap to instantly switch sort mode
+            com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.QuickSortChips(
+                currentSort = sortField,
+                onSortChange = onSortFieldChange
+            )
         }
 
         item {
