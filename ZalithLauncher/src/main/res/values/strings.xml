@@ -263,6 +263,9 @@
     <string name="download_assets_quick_filter_new">New Mods</string>
     <string name="download_assets_quick_filter_updated">Recently Updated</string>
     <string name="download_assets_quick_filter_popular">Most Popular</string>
+    <string name="download_assets_quick_filter_new">New Mods</string>
+    <string name="download_assets_quick_filter_updated">Recently Updated</string>
+    <string name="download_assets_quick_filter_popular">Most Popular</string>
     <string name="download_assets_failed_to_get_project">Failed to retrieve project information: %s. Tap to retry.</string>
     <string name="download_assets_failed_to_get_versions">Failed to retrieve version list: %s. Tap to retry.</string>
     <string name="download_assets_show_only_mc_release">Show Only MC Releases</string>
