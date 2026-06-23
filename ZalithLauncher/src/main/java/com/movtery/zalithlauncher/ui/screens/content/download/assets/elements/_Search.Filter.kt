@@ -207,14 +207,6 @@ fun SearchFilter(
         }
 
         item {
-            // Quick-filter chips: tap to instantly switch sort mode
-            com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.QuickSortChips(
-                currentSort = sortField,
-                onSortChange = onSortFieldChange
-            )
-        }
-
-        item {
             FilterListLayout(
                 modifier = Modifier.fillMaxWidth(),
                 items = PlatformSortField.entries,
