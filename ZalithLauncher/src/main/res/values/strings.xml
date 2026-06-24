@@ -420,6 +420,19 @@
     <string name="game_auto_pick_runtime_failed">No compatible runtime found. Using selected version\'s runtime.</string>
     <string name="game_button_input">Input Method</string>
     <string name="game_button_force_close">Force Close</string>
+    <string name="game_menu_option_switch_account">Switch Account</string>
+    <string name="game_menu_account_switcher_title">Switch Account</string>
+    <string name="game_menu_account_current">Current</string>
+    <string name="game_menu_account_switched">Switched to %s — takes effect on next launch.</string>
+    <string name="benchmark_title">GPU Benchmark</string>
+    <string name="benchmark_run">Run Benchmark</string>
+    <string name="benchmark_running">Benchmarking… %ds remaining</string>
+    <string name="benchmark_result_avg">Avg FPS</string>
+    <string name="benchmark_result_min">Min FPS</string>
+    <string name="benchmark_result_p99">99th pct FPS</string>
+    <string name="benchmark_result_stability">Stability</string>
+    <string name="benchmark_result_score">Score</string>
+    <string name="benchmark_note">Tests raw GPU draw-call throughput (500 quads × 15 s). Higher score = better renderer performance headroom.</string>
     <string name="game_button_log_output">Log Output</string>
     <string name="game_button_mouse_left">Left Click</string>
     <string name="game_button_mouse_right">Right Click</string>
