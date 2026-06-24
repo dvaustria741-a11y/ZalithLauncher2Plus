@@ -97,6 +97,7 @@ fun RendererSettingsScreen(
         var showFreedrenoSettings by remember { mutableStateOf(false) }
         var showPanfrostSettings by remember { mutableStateOf(false) }
         var showKryptonTestSettings by remember { mutableStateOf(false) }
+        var showBenchmark by remember { mutableStateOf(false) }
         var driverToDelete by remember { mutableStateOf<Driver?>(null) }
 
         if (showMobileGluesSettings) {
@@ -125,6 +126,10 @@ fun RendererSettingsScreen(
 
         if (showKryptonTestSettings) {
             KryptonWrapperTestSettingsDialog(onDismissRequest = { showKryptonTestSettings = false })
+        }
+
+        if (showBenchmark) {
+            RendererBenchmarkOverlay(onDismiss = { showBenchmark = false })
         }
 
         driverToDelete?.let { driver ->
@@ -168,6 +173,14 @@ fun RendererSettingsScreen(
                         getItemId = { it.getUniqueIdentifier() },
                         getItemSummary = {
                             RendererSummaryLayout(it)
+                        },
+                        headerContent = {
+                            androidx.compose.material3.OutlinedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { showBenchmark = true }
+                            ) {
+                                Text(stringResource(R.string.benchmark_run))
+                            }
                         },
                         getItemTrailing = { renderer ->
                             when (renderer.getRendererName()) {
