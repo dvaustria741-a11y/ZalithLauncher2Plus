@@ -97,7 +97,8 @@ fun GameMenuSubscreen(
     onSendKeycode: () -> Unit,
     onReplacementControl: () -> Unit,
     onManageJoystick: () -> Unit,
-    onEditLayout: () -> Unit
+    onEditLayout: () -> Unit,
+    onSwitchAccount: () -> Unit
 ) {
     DualMenuSubscreen(
         state = state,
@@ -180,7 +181,8 @@ fun GameMenuSubscreen(
                 onOpenPerformanceRam = onOpenPerformanceRam,
                 enableTerracotta = enableTerracotta,
                 onOpenTerracottaMenu = onOpenTerracottaMenu,
-                onRefreshWindowSize = onRefreshWindowSize
+                onRefreshWindowSize = onRefreshWindowSize,
+                onSwitchAccount = onSwitchAccount
             )
         }
     )
@@ -195,6 +197,7 @@ private fun GameActionContent(
     enableTerracotta: Boolean,
     onOpenTerracottaMenu: () -> Unit,
     onRefreshWindowSize: () -> Unit,
+    onSwitchAccount: () -> Unit,
     modifier: Modifier = Modifier,
     color: Color = cardColor(false),
     contentColor: Color = onCardColor(),
@@ -207,6 +210,17 @@ private fun GameActionContent(
         contentPadding = PaddingValues(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // 切换账号
+        item {
+            MenuTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.game_menu_option_switch_account),
+                onClick = onSwitchAccount,
+                color = color,
+                contentColor = contentColor,
+            )
+        }
+
         //强制关闭
         item {
             MenuTextButton(
@@ -344,7 +358,8 @@ private fun ControlOverview(
     onSendKeycode: () -> Unit,
     onReplacementControl: () -> Unit,
     onManageJoystick: () -> Unit,
-    onEditLayout: () -> Unit
+    onEditLayout: () -> Unit,
+    onSwitchAccount: () -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
