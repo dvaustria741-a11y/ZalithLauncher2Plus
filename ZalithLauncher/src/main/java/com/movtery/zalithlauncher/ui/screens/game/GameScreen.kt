@@ -120,6 +120,7 @@ import com.movtery.zalithlauncher.ui.control.mouse.SwitchableMouseLayout
 import com.movtery.zalithlauncher.ui.screens.game.elements.DraggableGameBall
 import com.movtery.zalithlauncher.ui.screens.game.elements.ForceCloseOperation
 import com.movtery.zalithlauncher.ui.screens.game.elements.GameMenuSubscreen
+import com.movtery.zalithlauncher.ui.screens.game.elements.InGameAccountSwitcherDialog
 import com.movtery.zalithlauncher.ui.screens.game.elements.JoystickManageOperation
 import com.movtery.zalithlauncher.ui.screens.game.elements.LogBox
 import com.movtery.zalithlauncher.ui.screens.game.elements.LogState
@@ -714,6 +715,12 @@ fun GameScreen(
             modifier = Modifier.fillMaxSize()
         )
 
+        var showAccountSwitcher by remember { mutableStateOf(false) }
+
+        if (showAccountSwitcher) {
+            InGameAccountSwitcherDialog(onDismissRequest = { showAccountSwitcher = false })
+        }
+
         GameMenuSubscreen(
             state = viewModel.gameMenuState,
             controlMenuTabIndex = viewModel.controlMenuTabIndex,
@@ -739,7 +746,8 @@ fun GameScreen(
                 viewModel.startControlEditor(
                     editorVM = editorViewModel
                 )
-            }
+            },
+            onSwitchAccount = { showAccountSwitcher = true }
         )
 
         if (AllSettings.gamepadControl.state) {
