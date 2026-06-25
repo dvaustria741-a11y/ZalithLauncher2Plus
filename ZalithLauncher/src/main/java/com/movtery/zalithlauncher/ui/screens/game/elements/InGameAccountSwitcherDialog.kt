@@ -104,7 +104,7 @@ private fun AccountRow(
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        PlayerFace(account = account, size = 36.dp)
+        PlayerFace(account = account, avatarSize = 36.dp)
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(account.username, style = MaterialTheme.typography.bodyMedium)
