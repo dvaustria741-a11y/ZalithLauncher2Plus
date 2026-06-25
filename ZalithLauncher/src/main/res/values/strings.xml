@@ -957,6 +957,11 @@
     <string name="settings_game_auto_pick_java_runtime_title">Auto-Select Java</string>
     <string name="settings_game_auto_pick_java_runtime_summary">When Java is required, the launcher will automatically select the appropriate environment. If unable to determine, it will use the default Java environment</string>
     <string name="settings_game_java_runtime_title">Java Runtime</string>
+    <string name="settings_game_import_runtime_title">Import Runtime Environment</string>
+    <string name="settings_game_import_runtime_summary">Import a custom JRE from a .tar.xz archive on your device. The runtime will appear in the Java Runtime list after import.</string>
+    <string name="settings_game_import_runtime_success">Runtime \"%s\" imported successfully.</string>
+    <string name="settings_game_import_runtime_failed">Import failed: %s</string>
+    <string name="settings_game_import_runtime_running">Importing runtime\u2026</string>
     <string name="settings_game_java_runtime_summary">Specify the default Java environment to use</string>
     <string name="settings_game_java_memory_title">Memory Allocation</string>
     <string name="settings_game_java_memory_summary">Adjust Minecraft\'s memory usage</string>
