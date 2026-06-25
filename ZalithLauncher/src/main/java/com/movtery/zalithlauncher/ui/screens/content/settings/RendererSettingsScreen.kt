@@ -162,6 +162,13 @@ fun RendererSettingsScreen(
                         .fillMaxWidth()
                         .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
                 ) {
+                    androidx.compose.material3.OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { showBenchmark = true }
+                    ) {
+                        Text(stringResource(R.string.benchmark_run))
+                    }
+
                     ListSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
                         position = CardPosition.Top,
@@ -173,14 +180,6 @@ fun RendererSettingsScreen(
                         getItemId = { it.getUniqueIdentifier() },
                         getItemSummary = {
                             RendererSummaryLayout(it)
-                        },
-                        headerContent = {
-                            androidx.compose.material3.OutlinedButton(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = { showBenchmark = true }
-                            ) {
-                                Text(stringResource(R.string.benchmark_run))
-                            }
                         },
                         getItemTrailing = { renderer ->
                             when (renderer.getRendererName()) {
