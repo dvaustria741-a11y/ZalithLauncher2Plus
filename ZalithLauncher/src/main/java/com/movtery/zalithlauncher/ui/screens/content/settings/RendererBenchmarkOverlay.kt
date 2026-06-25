@@ -163,11 +163,15 @@ private fun SelectingPhase(
     onStart: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.72f)
+    ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -200,37 +204,44 @@ private fun SelectingPhase(
 
             HorizontalDivider()
 
-            availableRenderers.forEach { renderer ->
-                val checked = selected.contains(renderer)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            if (checked) selected.remove(renderer) else selected.add(renderer)
-                        }
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = checked,
-                        onCheckedChange = { on ->
-                            if (on) selected.add(renderer) else selected.remove(renderer)
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            renderer.getRendererName(),
-                            style = MaterialTheme.typography.bodyMedium
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                availableRenderers.forEach { renderer ->
+                    val checked = selected.contains(renderer)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (checked) selected.remove(renderer) else selected.add(renderer)
+                            }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checked,
+                            onCheckedChange = { on ->
+                                if (on) selected.add(renderer) else selected.remove(renderer)
+                            }
                         )
-                        renderer.getRendererSummary()?.let { summary ->
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
                             Text(
-                                summary,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.outline,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                renderer.getRendererName(),
+                                style = MaterialTheme.typography.bodyMedium
                             )
+                            renderer.getRendererSummary()?.let { summary ->
+                                Text(
+                                    summary,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 }
