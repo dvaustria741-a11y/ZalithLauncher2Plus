@@ -40,7 +40,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
+import android.provider.OpenableColumns
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import com.movtery.zalithlauncher.game.multirt.RuntimesManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.movtery.zalithlauncher.game.plugin.natives.NativePlugin
 import com.movtery.zalithlauncher.game.plugin.natives.NativePluginManager
 import com.movtery.zalithlauncher.path.URL_CLOUD_NATIVE_LIB_PLUGINS
@@ -125,6 +138,54 @@ fun GameSettingsScreen(
                 ) {
                     val runtimes = remember { RuntimesManager.getRuntimes() }
 
+                    var importingRuntime by remember { mutableStateOf(false) }
+                    val importScope = rememberCoroutineScope()
+                    val nativeLibDir = context.applicationInfo.nativeLibraryDir
+
+                    val importLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.GetContent()
+                    ) { uri ->
+                        if (uri == null) return@rememberLauncherForActivityResult
+                        importScope.launch {
+                            importingRuntime = true
+                            try {
+                                val name = withContext(Dispatchers.IO) {
+                                    context.contentResolver.query(
+                                        uri, null, null, null, null
+                                    )?.use { cursor ->
+                                        if (cursor.moveToFirst()) {
+                                            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                                            if (idx >= 0) cursor.getString(idx) else null
+                                        } else null
+                                    } ?: uri.lastPathSegment ?: "custom-runtime"
+                                }.removeSuffix(".tar.xz").removeSuffix(".tar").removeSuffix(".zip")
+
+                                withContext(Dispatchers.IO) {
+                                    context.contentResolver.openInputStream(uri)?.use { stream ->
+                                        RuntimesManager.installRuntime(
+                                            nativeLibDir = nativeLibDir,
+                                            inputStream = stream,
+                                            name = name
+                                        )
+                                    }
+                                }
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.settings_game_import_runtime_success, name),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.settings_game_import_runtime_failed, e.message),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } finally {
+                                importingRuntime = false
+                            }
+                        }
+                    }
+
                     if (runtimes.isNotEmpty()) {
                         ListSettingsCard(
                             modifier = Modifier.fillMaxWidth(),
@@ -137,6 +198,32 @@ fun GameSettingsScreen(
                             getItemId = { it.name }
                         )
                     }
+
+                    // Import Runtime Environment button
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Middle,
+                        title = stringResource(R.string.settings_game_import_runtime_title),
+                        summary = if (importingRuntime)
+                            stringResource(R.string.settings_game_import_runtime_running)
+                        else
+                            stringResource(R.string.settings_game_import_runtime_summary),
+                        enabled = !importingRuntime,
+                        onClick = { importLauncher.launch("*/*") },
+                        trailingIcon = {
+                            if (importingRuntime) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_folder_zip_outlined),
+                                    contentDescription = stringResource(R.string.settings_game_import_runtime_title)
+                                )
+                            }
+                        }
+                    )
 
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
