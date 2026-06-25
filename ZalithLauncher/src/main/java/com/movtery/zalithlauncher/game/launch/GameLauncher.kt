@@ -114,7 +114,8 @@ class GameLauncher(
 
         CallbackBridge.nativeSetUseInputStackQueue(gameManifest.arguments != null)
 
-        val customArgs = version.getJvmArgs().takeIf { it.isNotBlank() } ?: AllSettings.jvmArgs.getValue()
+        val userCustomArgs = version.getJvmArgs().takeIf { it.isNotBlank() } ?: AllSettings.jvmArgs.getValue()
+        val customArgs = buildPerfJvmArgs(userCustomArgs) + userCustomArgs
         val javaRuntime = getRuntime()
 
         printLauncherInfo(
@@ -128,6 +129,27 @@ class GameLauncher(
             javaRuntime = javaRuntime,
             customArgs = customArgs,
         )
+    }
+
+
+    /**
+     * ZalithLauncher2Plus: Prepend GC performance flags that are safe on Android JVM.
+     * Flags already present in the user's custom args are skipped to avoid duplicates.
+     */
+    private fun buildPerfJvmArgs(existingArgs: String): String {
+        val perf = listOf(
+            "-XX:+UseG1GC",
+            "-XX:MaxGCPauseMillis=50",
+            "-XX:G1NewSizePercent=20",
+            "-XX:G1ReservePercent=20",
+            "-XX:+DisableExplicitGC",
+            "-Dsun.rmi.dgc.server.gcInterval=2147483646"
+        )
+        val inject = perf.filter { flag ->
+            val key = flag.substringBefore('=').substringBefore(':')
+            !existingArgs.contains(key)
+        }
+        return if (inject.isEmpty()) "" else inject.joinToString(" ") + " "
     }
 
     override fun MutableMap<String, String>.putJavaArgs() {
