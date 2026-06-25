@@ -1391,4 +1391,20 @@
     <string name="settings_export_failed">Export failed!</string>
     <string name="storage_permission_request_title">Storage Permission Required</string>
     <string name="storage_permission_request_message">To export settings/accounts to public storage, we need storage permission.</string>
+    <string name="benchmark_select_renderers">Select Renderers to Compare</string>
+    <string name="benchmark_select_all">Select All</string>
+    <string name="benchmark_deselect_all">Deselect All</string>
+    <string name="benchmark_select_minimum">Select at least 1 renderer to start</string>
+    <string name="benchmark_start">Start Benchmark</string>
+    <string name="benchmark_running_renderer">Benchmarking: %s</string>
+    <string name="benchmark_progress_of">%1$d of %2$d</string>
+    <string name="benchmark_comparison_title">Comparison Results</string>
+    <string name="benchmark_score_label">Score: %d</string>
+    <string name="benchmark_col_renderer">Renderer</string>
+    <string name="benchmark_col_avg">Avg</string>
+    <string name="benchmark_col_min">Min</string>
+    <string name="benchmark_col_p99">P99</string>
+    <string name="benchmark_col_stab">Stab%%</string>
+    <string name="benchmark_run_again">Run Again</string>
 </resources>
+
