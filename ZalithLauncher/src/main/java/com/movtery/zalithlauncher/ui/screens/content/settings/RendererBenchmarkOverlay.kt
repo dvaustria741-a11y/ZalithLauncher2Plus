@@ -75,31 +75,36 @@ fun RendererBenchmarkOverlay(
     Box(modifier = Modifier.fillMaxSize()) {
 
         if (phase == BenchmarkPhase.RUNNING && currentIndex < selected.size) {
-            val rendererName = selected[currentIndex].getRendererName()
-            val glRenderer = remember(currentIndex) {
-                BenchmarkGLRenderer(
-                    durationMs = 15_000L,
-                    onProgress = { s -> secondsLeft = s },
-                    onComplete = { r ->
-                        results.add(RendererBenchmarkResult(rendererName, r))
-                        currentIndex++
-                        if (currentIndex >= selected.size) {
-                            phase = BenchmarkPhase.RESULTS
-                        } else {
-                            secondsLeft = 15
+            key(currentIndex) {
+                val rendererName = selected[currentIndex].getRendererName()
+                val glRenderer = remember {
+                    BenchmarkGLRenderer(
+                        durationMs = 15_000L,
+                        onProgress = { s -> secondsLeft = s },
+                        onComplete = { r ->
+                            results.add(RendererBenchmarkResult(rendererName, r))
+                            currentIndex++
+                            if (currentIndex >= selected.size) {
+                                phase = BenchmarkPhase.RESULTS
+                            } else {
+                                secondsLeft = 15
+                            }
                         }
-                    }
-                )
-            }
-            val glView = remember(currentIndex) {
-                GLSurfaceView(context).apply {
-                    setEGLContextClientVersion(2)
-                    setRenderer(glRenderer)
-                    renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+                    )
                 }
+                val glView = remember {
+                    GLSurfaceView(context).apply {
+                        setEGLContextClientVersion(2)
+                        setRenderer(glRenderer)
+                        renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+                    }
+                }
+                DisposableEffect(Unit) {
+                    glView.onResume()
+                    onDispose { glView.onPause() }
+                }
+                AndroidView(factory = { glView }, modifier = Modifier.fillMaxSize())
             }
-            DisposableEffect(currentIndex) { onDispose { glView.onPause() } }
-            AndroidView(factory = { glView }, modifier = Modifier.fillMaxSize())
         }
 
         Box(
