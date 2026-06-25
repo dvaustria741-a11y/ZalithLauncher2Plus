@@ -358,8 +358,7 @@ private fun ControlOverview(
     onSendKeycode: () -> Unit,
     onReplacementControl: () -> Unit,
     onManageJoystick: () -> Unit,
-    onEditLayout: () -> Unit,
-    onSwitchAccount: () -> Unit
+    onEditLayout: () -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
