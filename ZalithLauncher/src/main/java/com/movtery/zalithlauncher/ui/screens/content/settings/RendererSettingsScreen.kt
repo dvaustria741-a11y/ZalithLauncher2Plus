@@ -50,6 +50,7 @@ import com.movtery.zalithlauncher.game.plugin.driver.Driver
 import com.movtery.zalithlauncher.game.plugin.driver.DriverPluginManager
 import com.movtery.zalithlauncher.game.renderer.RendererInterface
 import com.movtery.zalithlauncher.game.renderer.Renderers
+import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.game.version.installed.GraphicsApi
 import com.movtery.zalithlauncher.path.URL_CLOUD_DRIVE_DRIVER_PLUGINS
 import com.movtery.zalithlauncher.path.URL_CLOUD_RENDERER_PLUGINS
@@ -135,7 +136,10 @@ fun RendererSettingsScreen(
                 onDismissRequest = { showBenchmark = false },
                 properties = DialogProperties(usePlatformDefaultWidth = false)
             ) {
-                RendererBenchmarkOverlay(onDismiss = { showBenchmark = false })
+                RendererBenchmarkOverlay(
+                    availableRenderers = Renderers.getCompatibleRenderers(context).second,
+                    onDismiss = { showBenchmark = false }
+                )
             }
         }
 
