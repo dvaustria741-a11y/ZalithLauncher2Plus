@@ -108,7 +108,7 @@ private fun AccountRow(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(account.username, style = MaterialTheme.typography.bodyMedium)
-            Text(account.accountType, style = MaterialTheme.typography.labelSmall,
+            Text(account.accountType.orEmpty(), style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline)
         }
         if (isCurrent) {
