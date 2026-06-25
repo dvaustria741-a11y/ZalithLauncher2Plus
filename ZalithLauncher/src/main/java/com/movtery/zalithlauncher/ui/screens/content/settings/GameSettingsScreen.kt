@@ -140,6 +140,7 @@ fun GameSettingsScreen(
 
                     var importingRuntime by remember { mutableStateOf(false) }
                     val importScope = rememberCoroutineScope()
+                    val context = LocalContext.current
                     val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
                     val importLauncher = rememberLauncherForActivityResult(
