@@ -77,6 +77,8 @@ import com.movtery.zalithlauncher.utils.device.checkVulkanSupport
 import com.movtery.zalithlauncher.utils.isAdrenoGPU
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.sendDLPlugin
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun RendererSettingsScreen(
@@ -129,7 +131,12 @@ fun RendererSettingsScreen(
         }
 
         if (showBenchmark) {
-            RendererBenchmarkOverlay(onDismiss = { showBenchmark = false })
+            Dialog(
+                onDismissRequest = { showBenchmark = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                RendererBenchmarkOverlay(onDismiss = { showBenchmark = false })
+            }
         }
 
         driverToDelete?.let { driver ->
