@@ -137,8 +137,11 @@ class GameLauncher(
      * Flags already present in the user's custom args are skipped to avoid duplicates.
      */
     private fun buildPerfJvmArgs(existingArgs: String): String {
+        // G1NewSizePercent and G1ReservePercent are experimental on Java 17+ and require
+        // UnlockExperimentalVMOptions to precede them — so we always inject that unlock flag first.
         val perf = listOf(
             "-XX:+UseG1GC",
+            "-XX:+UnlockExperimentalVMOptions",
             "-XX:MaxGCPauseMillis=50",
             "-XX:G1NewSizePercent=20",
             "-XX:G1ReservePercent=20",
