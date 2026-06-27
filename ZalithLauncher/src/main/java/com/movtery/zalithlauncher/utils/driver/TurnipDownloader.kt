@@ -103,6 +103,53 @@ object TurnipDownloader {
         return result
     }
 
+    fun importFromFile(context: Context, uri: android.net.Uri, displayName: String) {
+        val task = Task.runTask(
+            id = "import_turnip_driver_$displayName",
+            task = { it ->
+                it.updateMessage(R.string.settings_renderer_turnip_extracting)
+                it.updateProgress(-1f)
+
+                val safeDirName = displayName
+                    .removeSuffix(".zip")
+                    .replace(Regex("[/\\\\]+"), "_")
+                    .ifEmpty { "imported-driver" }
+
+                val extractDir = File(PathManager.DIR_DRIVERS, safeDirName)
+                if (extractDir.exists()) extractDir.deleteRecursively()
+                extractDir.mkdirs()
+
+                val cacheFile = File(PathManager.DIR_CACHE, displayName)
+                try {
+                    withContext(Dispatchers.IO) {
+                        context.contentResolver.openInputStream(uri)?.use { input ->
+                            cacheFile.outputStream().use { output -> input.copyTo(output) }
+                        } ?: throw Exception("Cannot open selected file")
+
+                        ZipFile(cacheFile).use { zip ->
+                            zip.extractFromZip("", extractDir)
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        DriverPluginManager.scanExternalDrivers(context)
+                        notifyDriverChanged()
+                        Toast.makeText(context, R.string.settings_renderer_turnip_success, Toast.LENGTH_SHORT).show()
+                    }
+                } finally {
+                    cacheFile.delete()
+                }
+            },
+            onError = { th ->
+                Logger.error(TAG, "Failed to import Turnip driver", th)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Failed: ${th.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        )
+        TaskSystem.submitTask(task)
+    }
+
     fun downloadAsset(context: Context, asset: GithubReleaseApi.Asset) {
         val task = Task.runTask(
             id = "download_turnip_driver_${asset.name}",
