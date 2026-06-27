@@ -42,9 +42,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import android.content.Intent
+import android.graphics.BitmapFactory
+import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
+import com.movtery.zalithlauncher.ui.activities.EXTRA_LAUNCH_VERSION
+import com.movtery.zalithlauncher.ui.activities.SplashActivity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
@@ -166,6 +174,7 @@ fun VersionOverViewScreen(
                     onEditSummary = { versionsOperation = VersionsOperation.EditSummary(version) },
                     onRename = { versionsOperation = VersionsOperation.Rename(version) },
                     onExport = onExport,
+                    onCreateShortcut = { versionsOperation = VersionsOperation.CreateShortcut(version) },
                     onDelete = { versionsOperation = VersionsOperation.Delete(version) }
                 )
             }
@@ -300,6 +309,7 @@ private fun VersionManagementLayout(
     onEditSummary: () -> Unit,
     onRename: () -> Unit,
     onExport: () -> Unit,
+    onCreateShortcut: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val logFile = remember(version) {
@@ -360,6 +370,14 @@ private fun VersionManagementLayout(
                 ) {
                     Text(
                         text = stringResource(R.string.versions_overview_log)
+                    )
+                }
+                OutlinedButton(
+                    modifier = Modifier.padding(end = 12.dp),
+                    onClick = onCreateShortcut
+                ) {
+                    Text(
+                        text = stringResource(R.string.versions_overview_create_shortcut)
                     )
                 }
                 OutlinedButton(
@@ -480,6 +498,7 @@ sealed interface VersionsOperation {
     data class Rename(val version: Version): VersionsOperation
     data class Delete(val version: Version): VersionsOperation
     data class RunTask(val title: Int, val task: suspend () -> Unit): VersionsOperation
+    data class CreateShortcut(val version: Version): VersionsOperation
 }
 
 @Composable
@@ -554,6 +573,11 @@ private fun VersionsOperation(
                 }
             )
         }
+        is VersionsOperation.CreateShortcut -> {
+            val ctx = LocalContext.current
+            createHomeScreenShortcut(ctx, versionsOperation.version)
+            updateOperation(VersionsOperation.None)
+        }
         is VersionsOperation.RunTask -> {
             val errorMessage = stringResource(R.string.versions_manage_task_error)
             SimpleTaskDialog(
@@ -575,3 +599,46 @@ private fun VersionsOperation(
     }
 }
 
+/**
+ * ZalithLauncher2Plus: Pin a home screen shortcut that directly launches the given version.
+ * Uses the version's custom icon if present, otherwise falls back to the app launcher icon.
+ */
+private fun createHomeScreenShortcut(context: android.content.Context, version: Version) {
+    if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
+        Toast.makeText(
+            context,
+            context.getString(R.string.versions_overview_shortcut_not_supported),
+            Toast.LENGTH_SHORT
+        ).show()
+        return
+    }
+
+    val intent = Intent(context, SplashActivity::class.java).apply {
+        action = Intent.ACTION_VIEW
+        putExtra(EXTRA_LAUNCH_VERSION, version.getVersionName())
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+
+    val iconFile = VersionsManager.getVersionIconFile(version)
+    val icon: IconCompat = if (iconFile.exists()) {
+        runCatching {
+            IconCompat.createWithBitmap(BitmapFactory.decodeFile(iconFile.absolutePath))
+        }.getOrDefault(IconCompat.createWithResource(context, R.mipmap.ic_launcher))
+    } else {
+        IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+    }
+
+    val shortcut = ShortcutInfoCompat.Builder(context, "launch_version_${version.getVersionName()}")
+        .setShortLabel(version.getVersionName())
+        .setLongLabel(context.getString(R.string.versions_overview_create_shortcut) + ": " + version.getVersionName())
+        .setIcon(icon)
+        .setIntent(intent)
+        .build()
+
+    ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+    Toast.makeText(
+        context,
+        context.getString(R.string.versions_overview_shortcut_created, version.getVersionName()),
+        Toast.LENGTH_SHORT
+    ).show()
+}
