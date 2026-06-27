@@ -145,19 +145,24 @@ fun TurnipDriversScreen(
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 CardTitleLayout {
-                    Text(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        text = stringResource(R.string.settings_renderer_download_turnip),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    IconButton(onClick = { importLauncher.launch("application/zip") }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_add),
-                            contentDescription = stringResource(R.string.turnip_driver_import),
-                            tint = MaterialTheme.colorScheme.onSurface
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            text = stringResource(R.string.settings_renderer_download_turnip),
+                            style = MaterialTheme.typography.titleMedium
                         )
+                        IconButton(onClick = { importLauncher.launch("application/zip") }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_add),
+                                contentDescription = stringResource(R.string.turnip_driver_import),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
 
