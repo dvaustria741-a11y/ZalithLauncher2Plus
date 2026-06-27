@@ -21,6 +21,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +75,20 @@ fun TurnipDriversScreen(
         var error by remember { mutableStateOf<String?>(null) }
         var installedDrivers by remember { mutableStateOf(emptyList<File>()) }
         var driverToDelete by remember { mutableStateOf<File?>(null) }
+
+        val importLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
+            val displayName = run {
+                val cursor = context.contentResolver.query(uri, null, null, null, null)
+                cursor?.use {
+                    val idx = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (it.moveToFirst() && idx >= 0) it.getString(idx) else null
+                } ?: uri.lastPathSegment ?: "imported-driver.zip"
+            }.let { if (!it.endsWith(".zip", ignoreCase = true)) "$it.zip" else it }
+            TurnipDownloader.importFromFile(context, uri, displayName)
+        }
 
         LaunchedEffect(Unit) {
             installedDrivers = scanInstalledDrivers()
@@ -130,10 +146,19 @@ fun TurnipDriversScreen(
             Column(modifier = Modifier.fillMaxSize()) {
                 CardTitleLayout {
                     Text(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         text = stringResource(R.string.settings_renderer_download_turnip),
                         style = MaterialTheme.typography.titleMedium
                     )
+                    IconButton(onClick = { importLauncher.launch("application/zip") }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add),
+                            contentDescription = stringResource(R.string.turnip_driver_import),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
 
                 when {
