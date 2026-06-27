@@ -251,7 +251,12 @@ class SplashActivity : BaseAppCompatActivity(refreshData = false) {
     }
 
     private fun swapToMain() {
-        startActivity(Intent(this, MainActivity::class.java))
+        val mainIntent = Intent(this, MainActivity::class.java)
+        // Forward shortcut version so MainActivity auto-launches it
+        intent.getStringExtra(EXTRA_LAUNCH_VERSION)?.let {
+            mainIntent.putExtra(EXTRA_LAUNCH_VERSION, it)
+        }
+        startActivity(mainIntent)
         finish()
     }
 
