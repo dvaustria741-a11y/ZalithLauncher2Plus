@@ -147,7 +147,11 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     override fun onCompositionDispose(eventHandler: EventHandler?) {
         autoClickJob?.cancel()
         autoClickJob = null
-        autoClickScope.cancel()
+        // Do NOT cancel autoClickScope here — cancelling the scope permanently
+        // kills it and any future autoClickScope.launch() will silently no-op,
+        // causing the hold-click CPS to stop working until the object is recreated.
+        // The scope lives with the ObservableNormalData instance; only the job needs
+        // to be cancelled when the composable leaves composition.
         if (isPressed) {
             //fix: 若本身未按下，不应该输出抬起事件
             isPressed = false
