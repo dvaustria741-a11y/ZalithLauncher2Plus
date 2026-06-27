@@ -680,6 +680,7 @@
     <string name="versions_manage_add_shortcut">Add to Home Screen</string>
     <string name="turnip_driver_installed">Installed Drivers</string>
     <string name="turnip_driver_available">Available to Download</string>
+    <string name="turnip_driver_import">Import local ZIP</string>
     <string name="turnip_driver_delete_confirm">Delete driver "%s"? This cannot be undone.</string>
     <string name="versions_manage_rename_version">Rename Version</string>
     <string name="versions_manage_copy_version">Copy Version</string>
