@@ -1411,5 +1411,8 @@
     <string name="benchmark_col_p99">P99</string>
     <string name="benchmark_col_stab">Stab%%</string>
     <string name="benchmark_run_again">Run Again</string>
+    <string name="versions_overview_create_shortcut">Create Shortcut</string>
+    <string name="versions_overview_shortcut_created">Shortcut created for %s</string>
+    <string name="versions_overview_shortcut_not_supported">Home screen shortcuts are not supported on this device</string>
 </resources>
 
