@@ -3,11 +3,40 @@
 
 #include <cmath>
 #include <cstring>
+#include <time.h>
 
 static bool g_initialized = false;
 static bool g_active = false;
 static bool g_hooksActive = false;
 static int g_qualityPreset = 2;
+
+/*
+ * Adaptive mode: instead of a fixed preset, the render scale is continuously
+ * adjusted based on measured real frame time vs. a target frame time. This
+ * reuses the exact same downscale-render + FSR-upscale pipeline as the manual
+ * preset mode - only what drives g_renderWidth/g_renderHeight differs.
+ */
+static bool g_adaptiveEnabled = false;
+static float g_targetFrameTimeMs = 16.6f; // derived from target FPS
+static float g_currentScale = 1.5f;       // continuous equivalent of g_qualityPreset
+static constexpr float kMinScale = 1.0f;  // native resolution, no downscale
+static constexpr float kMaxScale = 2.2f;  // don't go below ~45% render resolution
+static constexpr float kScaleStep = 0.1f;
+static constexpr int kWindowFrames = 30;         // ~0.5s at 60fps, evaluate every N frames
+static constexpr float kOverBudgetRatio = 1.15f;  // step down if avg frame time exceeds target by this much
+static constexpr float kUnderBudgetRatio = 0.85f; // step up (raise res) if comfortably under target
+static constexpr int64_t kCooldownNs = 1000000000LL; // don't adjust more than once per second
+
+static int64_t g_lastFrameTimeNs = 0;
+static int64_t g_lastAdjustTimeNs = 0;
+static double g_frameTimeAccumMs = 0.0;
+static int g_frameTimeSampleCount = 0;
+
+static int64_t nowNs() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+}
 
 static GLuint g_renderFBO = 0;
 static GLuint g_renderTexture = 0;
@@ -53,6 +82,23 @@ static void calcRenderResolution(int targetW, int targetH, int preset, int* outW
     *outH = (int)(targetH / scale);
     *outW = (*outW + 1) & ~1;
     *outH = (*outH + 1) & ~1;
+}
+
+static void calcRenderResolutionFromScale(int targetW, int targetH, float scale, int* outW, int* outH) {
+    *outW = (int)(targetW / scale);
+    *outH = (int)(targetH / scale);
+    *outW = (*outW + 1) & ~1;
+    *outH = (*outH + 1) & ~1;
+}
+
+/* Single dispatch point so surface-resize handling and init both stay in sync
+ * with whichever mode (manual preset vs. adaptive) is currently driving the scale. */
+static void recomputeRenderResolution(int* outW, int* outH) {
+    if (g_adaptiveEnabled) {
+        calcRenderResolutionFromScale(g_targetWidth, g_targetHeight, g_currentScale, outW, outH);
+    } else {
+        calcRenderResolution(g_targetWidth, g_targetHeight, g_qualityPreset, outW, outH);
+    }
 }
 
 static GLuint compileShader(GLenum type, const char* source) {
@@ -358,7 +404,7 @@ extern "C" void fsr_init(int qualityPreset) {
 
     g_targetWidth = targetW;
     g_targetHeight = targetH;
-    calcRenderResolution(g_targetWidth, g_targetHeight, g_qualityPreset, &g_renderWidth, &g_renderHeight);
+    recomputeRenderResolution(&g_renderWidth, &g_renderHeight);
 
     if (g_renderWidth <= 0 || g_renderHeight <= 0) {
         LOGE("FSR: invalid render dimensions %dx%d", g_renderWidth, g_renderHeight);
@@ -436,8 +482,85 @@ static bool fsrRebuildFramebuffers() {
     return true;
 }
 
+/* Shared by both surface-resize handling and adaptive scale changes: given a
+ * freshly recomputed g_renderWidth/g_renderHeight, rebuild the FBOs at the new
+ * size and rebind. Returns false (and disables FSR) if the rebuild fails. */
+static bool applyNewRenderResolution() {
+    if (g_renderWidth >= g_targetWidth || g_renderHeight >= g_targetHeight) {
+        return true; // nothing to do, downscale would be a no-op
+    }
+    if (!fsrRebuildFramebuffers()) {
+        LOGE("FSR: framebuffer rebuild failed, disabling");
+        g_active = false;
+        return false;
+    }
+    real_glViewport(0, 0, g_renderWidth, g_renderHeight);
+    real_glBindFramebuffer(GL_FRAMEBUFFER, g_renderFBO);
+    return true;
+}
+
+/*
+ * Called once per frame from fsr_apply(), before the resize/render logic.
+ * Tracks a rolling window of real frame-to-frame time and, in adaptive mode,
+ * nudges g_currentScale up or down to chase g_targetFrameTimeMs. Deliberately
+ * conservative: evaluates only every kWindowFrames frames and enforces a
+ * cooldown between changes, so a single stutter (loading a chunk, GC pause)
+ * doesn't cause visible resolution flicker - only a sustained trend does.
+ */
+static void adaptiveTick() {
+    int64_t now = nowNs();
+    if (g_lastFrameTimeNs == 0) {
+        // first frame since FSR became active - nothing to compare against yet
+        g_lastFrameTimeNs = now;
+        g_lastAdjustTimeNs = now;
+        return;
+    }
+
+    double deltaMs = (double)(now - g_lastFrameTimeNs) / 1e6;
+    g_lastFrameTimeNs = now;
+
+    if (!g_adaptiveEnabled) return;
+
+    // Ignore outlier frames (app backgrounded, breakpoint, huge stutter) so
+    // they don't dominate the rolling average and cause an overreaction.
+    if (deltaMs > 250.0) return;
+
+    g_frameTimeAccumMs += deltaMs;
+    g_frameTimeSampleCount++;
+    if (g_frameTimeSampleCount < kWindowFrames) return;
+
+    double avgMs = g_frameTimeAccumMs / g_frameTimeSampleCount;
+    g_frameTimeAccumMs = 0.0;
+    g_frameTimeSampleCount = 0;
+
+    if (now - g_lastAdjustTimeNs < kCooldownNs) return;
+
+    float newScale = g_currentScale;
+    if (avgMs > g_targetFrameTimeMs * kOverBudgetRatio && g_currentScale < kMaxScale) {
+        newScale = g_currentScale + kScaleStep;
+        if (newScale > kMaxScale) newScale = kMaxScale;
+    } else if (avgMs < g_targetFrameTimeMs * kUnderBudgetRatio && g_currentScale > kMinScale) {
+        newScale = g_currentScale - kScaleStep;
+        if (newScale < kMinScale) newScale = kMinScale;
+    } else {
+        return; // within budget band, leave it alone
+    }
+
+    if (newScale == g_currentScale) return;
+
+    LOGD("FSR adaptive: avg frame %.2fms vs target %.2fms, scale %.2f -> %.2f",
+         avgMs, g_targetFrameTimeMs, g_currentScale, newScale);
+    g_currentScale = newScale;
+    g_lastAdjustTimeNs = now;
+
+    recomputeRenderResolution(&g_renderWidth, &g_renderHeight);
+    applyNewRenderResolution();
+}
+
 extern "C" void fsr_apply() {
     if (g_active) {
+        adaptiveTick();
+
         EGLDisplay display = eglGetCurrentDisplay();
         EGLSurface surface = eglGetCurrentSurface(EGL_DRAW);
         if (display != EGL_NO_DISPLAY && surface != EGL_NO_SURFACE) {
@@ -448,16 +571,8 @@ extern "C" void fsr_apply() {
                 LOGD("FSR: surface resized %dx%d -> %dx%d", g_targetWidth, g_targetHeight, w, h);
                 g_targetWidth = w;
                 g_targetHeight = h;
-                calcRenderResolution(g_targetWidth, g_targetHeight, g_qualityPreset, &g_renderWidth, &g_renderHeight);
-                if (g_renderWidth < g_targetWidth && g_renderHeight < g_targetHeight) {
-                    if (!fsrRebuildFramebuffers()) {
-                        LOGE("FSR: resize failed, disabling");
-                        g_active = false;
-                        return;
-                    }
-                    real_glViewport(0, 0, g_renderWidth, g_renderHeight);
-                    real_glBindFramebuffer(GL_FRAMEBUFFER, g_renderFBO);
-                }
+                recomputeRenderResolution(&g_renderWidth, &g_renderHeight);
+                applyNewRenderResolution();
             }
         }
         goto do_fsr;
