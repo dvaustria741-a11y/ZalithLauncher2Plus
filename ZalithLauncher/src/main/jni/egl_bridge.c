@@ -101,8 +101,9 @@ void load_vulkan() {
 #ifdef ADRENO_POSSIBLE
         const char* native_dir = getenv("DRIVER_PATH");
         const char* cache_dir = getenv("TMPDIR");
+        const char* driver_file = getenv("DRIVER_FILE");
 
-        void* result = loadTurnipVulkan(NULL, native_dir, cache_dir);
+        void* result = loadTurnipVulkan(driver_file, native_dir, cache_dir);
         if (result != NULL)
         {
             printf("AdrenoSupp: Loaded Turnip, loader address: %p\n", result);

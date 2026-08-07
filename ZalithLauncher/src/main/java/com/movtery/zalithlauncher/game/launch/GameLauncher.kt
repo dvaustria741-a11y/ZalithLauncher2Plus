@@ -189,7 +189,12 @@ class GameLauncher(
         val envMap = super.initEnv(screenSize)
 
         DriverPluginManager.setDriverById(version.getDriver())
-        envMap["DRIVER_PATH"] = DriverPluginManager.getDriver().path
+        val selectedDriver = DriverPluginManager.getDriver()
+        envMap["DRIVER_PATH"] = selectedDriver.path
+        // Native side (egl_bridge.c) needs the actual .so filename, not just the directory -
+        // without this it always hardcodes "libvulkan_freedreno.so" and silently ignores whatever
+        // driver was actually picked in the UI.
+        envMap["DRIVER_FILE"] = selectedDriver.libraryName
 
         checkAndUsedJSPH(envMap, runtime)
         version.getVersionInfo()?.loaderInfo?.getLoaderEnvKey()?.let { loaderKey ->

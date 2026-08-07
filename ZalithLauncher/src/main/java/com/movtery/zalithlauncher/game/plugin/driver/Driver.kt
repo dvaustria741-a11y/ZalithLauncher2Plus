@@ -28,7 +28,13 @@ class Driver(
     val summary: String? = null,
     val path: String,
     val isLauncher: Boolean,
-    val isExternal: Boolean = false
+    val isExternal: Boolean = false,
+    /**
+     * The actual driver .so filename to dlopen (e.g. "libvulkan_freedreno.so" or,
+     * for AdrenoToolsDrivers-packaged drivers, whatever "libraryName" their meta.json declares).
+     * Native loading always resolves this specific file inside [path], never just "the first .so found".
+     */
+    val libraryName: String = ""
 ): ApkPlugin(
     packageName = id,
     appName = appName,

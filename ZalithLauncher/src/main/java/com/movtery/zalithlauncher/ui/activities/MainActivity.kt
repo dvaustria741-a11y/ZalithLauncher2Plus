@@ -483,7 +483,7 @@ class MainActivity : BaseAppCompatActivity() {
         withContext(Dispatchers.Main) {
             val result = if (useTurnip) {
                 val tempDir = File(PathManager.DIR_CACHE, "vulkan_temp")
-                VulkanChecker.checkCapabilities(null, driver.path, tempDir.absolutePath)
+                VulkanChecker.checkCapabilities(driver.libraryName, driver.path, tempDir.absolutePath)
             } else {
                 VulkanChecker.checkCapabilities(null, null, null)
             }

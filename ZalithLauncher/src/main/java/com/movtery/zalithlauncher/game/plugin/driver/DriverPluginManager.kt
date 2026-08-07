@@ -59,7 +59,8 @@ object DriverPluginManager: ApkPluginManager() {
                 appVersion = "",
                 name = "Turnip",
                 path = applicationInfo.nativeLibraryDir,
-                isLauncher = true
+                isLauncher = true,
+                libraryName = "libvulkan_freedreno.so"
             )
         )
         scanExternalDrivers(context)
@@ -91,12 +92,31 @@ object DriverPluginManager: ApkPluginManager() {
                             path = file.absolutePath,
                             isLauncher = false,
                             isExternal = true,
-                            summary = context.getString(R.string.settings_renderer_external_driver)
+                            summary = context.getString(R.string.settings_renderer_external_driver),
+                            libraryName = resolveDriverLibraryName(file, soFiles)
                         )
                     )
                 }
             }
         }
+    }
+
+    /**
+     * AdrenoToolsDrivers-style packages (https://github.com/K11MCH1/AdrenoToolsDrivers) ship a
+     * meta.json with a "libraryName" field naming the actual driver .so (e.g. "vulkan.ad0615.so"),
+     * since it's rarely called libvulkan_freedreno.so. Prefer that; if there's no meta.json or the
+     * field is missing/blank, fall back to the first .so found so we still load *something* rather
+     * than nothing.
+     */
+    private fun resolveDriverLibraryName(driverDir: java.io.File, soFiles: Array<java.io.File>): String {
+        val metaJson = java.io.File(driverDir, "meta.json")
+        if (metaJson.exists()) {
+            runCatching {
+                val libraryName = org.json.JSONObject(metaJson.readText()).optString("libraryName")
+                if (libraryName.isNotBlank()) return libraryName
+            }
+        }
+        return soFiles.first().name
     }
 
     /**
