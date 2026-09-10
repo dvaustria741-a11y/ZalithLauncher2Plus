@@ -283,6 +283,7 @@ dependencies {
     implementation(project(":LayerController"))
     implementation(project(":ColorPicker"))
     implementation(project(":Terracotta"))
+    implementation(project(":framegen")) // Frame generation scaffolding — see framegen/README.md
     //Utils
     implementation(libs.bytehook)
     implementation(libs.gson)

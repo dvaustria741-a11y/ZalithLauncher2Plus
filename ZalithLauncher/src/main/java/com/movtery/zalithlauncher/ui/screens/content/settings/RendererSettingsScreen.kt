@@ -407,6 +407,9 @@ fun RendererSettingsScreen(
                             AllSettings.frameGenerationEnabled.save()
                         }
                     )
+                    if (AllSettings.frameGenerationEnabled.state) {
+                        FrameGenDllPicker(modifier = Modifier.fillMaxWidth())
+                    }
 
                     IntSliderSettingsCard(
                         modifier = Modifier.fillMaxWidth(),

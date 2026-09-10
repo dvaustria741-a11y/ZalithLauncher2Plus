@@ -1,0 +1,4 @@
+[submodule "native/lsfg-vk-android"]
+	path = native/lsfg-vk-android
+	url = https://github.com/FrankBarretta/lsfg-vk-android.git
+	branch = release

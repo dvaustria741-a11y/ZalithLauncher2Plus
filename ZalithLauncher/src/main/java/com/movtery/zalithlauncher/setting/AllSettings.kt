@@ -679,4 +679,7 @@ object AllSettings : SettingsRegistry() {
 
     // Frame Generation (UI + GPU-tier gating only for now — see FrameGenerationSetting.kt)
     val frameGenerationEnabled = boolSetting("frameGenerationEnabled", false)
+    // Content URI (as string) of the user's own, legitimately-owned Lossless.dll.
+    // Never bundled/redistributed by this project — see FrameGenDllPicker.kt.
+    val frameGenerationDllUri = stringSetting("frameGenerationDllUri", "")
 }
