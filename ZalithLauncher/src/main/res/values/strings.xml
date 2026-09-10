@@ -461,6 +461,8 @@
     <string name="game_menu_option_hotbar_long_click_delay">Long press hotbar trigger delay</string>
     <string name="game_menu_option_show_menu">Enable Menu Overlay</string>
     <string name="game_menu_option_show_menu_hided">Game menu overlay has been disabled. You can open the game menu using the system back button</string>
+    <string name="game_menu_option_frame_generation">Frame Generation</string>
+    <string name="game_menu_option_frame_generation_warning">Frame Generation is experimental and may not perform well on your GPU. Configure the source DLL in Renderer Settings.</string>
     <string name="game_menu_option_controls_opacity">Control Layout Opacity</string>
     <string name="game_styles_joystick">Manage Joystick</string>
     <string name="game_styles_joystick_enable">Enable Joystick</string>

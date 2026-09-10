@@ -62,6 +62,8 @@ import com.movtery.zalithlauncher.ui.control.gyroscope.isGyroscopeAvailable
 import com.movtery.zalithlauncher.ui.theme.cardColor
 import com.movtery.zalithlauncher.ui.theme.cardTitleColor
 import com.movtery.zalithlauncher.ui.theme.onCardColor
+import com.movtery.zalithlauncher.utils.device.DetectedGpuHolder
+import com.movtery.zalithlauncher.utils.device.GpuTier
 import com.movtery.zalithlauncher.viewmodel.GamepadViewModel
 
 private data class IconTab(val iconRes: Int, val iconSize: Dp = 18.dp)
@@ -262,6 +264,28 @@ private fun GameActionContent(
 
         item {
             Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        //帧生成（实验性）
+        item {
+            MenuSwitchButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.game_menu_option_frame_generation),
+                switch = AllSettings.frameGenerationEnabled.state,
+                onSwitch = { value ->
+                    AllSettings.frameGenerationEnabled.save(value)
+                    val tier = DetectedGpuHolder.info?.tier
+                    if (value && (tier == GpuTier.LOW || tier == GpuTier.UNSUPPORTED || tier == null)) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.game_menu_option_frame_generation_warning),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                },
+                color = color,
+                contentColor = contentColor,
+            )
         }
 
         //开启菜单悬浮窗
