@@ -18,7 +18,10 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 28 // AHardwareBuffer + VK_ANDROID_external_memory_android_hardware_buffer need API 28+
+        minSdk = 26 // matches :ZalithLauncher's minSdk — AHardwareBuffer's JNI bridge
+                    // (hardware_buffer_jni.h) was already available at API 26, so there's
+                    // no real reason for this module to require higher and force a bump
+                    // to the main app's minSdk, which isn't this module's call to make.
 
         ndk {
             // VK_EXT_robustness2 in practice only shows up on Adreno 7xx / recent Mali —
