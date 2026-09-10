@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(zalith_framegen)
 
-# Pulls in lsfg-vk-android's `framegen/` target — same relative-path pattern its own
-# README documents for LSFG-Android-Application's JNI CMakeLists.txt, just from our
-# module's cpp dir instead of theirs.
+# Pulls in lsfg-vk-android's `framegen/` target. Path is relative to this file
+# (framegen/src/main/cpp/CMakeLists.txt) — 4 levels up (cpp -> main -> src -> framegen)
+# reaches the repo root, then into native/lsfg-vk-android.
 add_subdirectory(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../native/lsfg-vk-android
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../native/lsfg-vk-android
     ${CMAKE_CURRENT_BINARY_DIR}/lsfg-vk-android
 )
 
@@ -25,5 +25,5 @@ target_link_libraries(zalith_framegen_jni
 )
 
 target_include_directories(zalith_framegen_jni PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../native/lsfg-vk-android/framegen/public
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../native/lsfg-vk-android/framegen/public
 )
