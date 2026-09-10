@@ -676,4 +676,7 @@ object AllSettings : SettingsRegistry() {
     //FSR
     val fsrEnabled = boolSetting("fsrEnabled", false)
     val fsrQuality = intSetting("fsrQuality", 2, 1..4) // 1=UltraQuality, 2=Quality, 3=Balanced, 4=Performance
+
+    // Frame Generation (UI + GPU-tier gating only for now — see FrameGenerationSetting.kt)
+    val frameGenerationEnabled = boolSetting("frameGenerationEnabled", false)
 }

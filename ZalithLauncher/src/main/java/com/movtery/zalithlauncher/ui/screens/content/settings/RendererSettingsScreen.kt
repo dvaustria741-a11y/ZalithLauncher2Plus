@@ -73,6 +73,7 @@ import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCa
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SwitchSettingsCard
 import com.movtery.zalithlauncher.ui.screens.navigateTo
 import com.movtery.zalithlauncher.ui.screens.navigateOnce
+import com.movtery.zalithlauncher.utils.device.DetectedGpuHolder
 import com.movtery.zalithlauncher.utils.device.checkVulkanSupport
 import com.movtery.zalithlauncher.utils.isAdrenoGPU
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
@@ -397,6 +398,15 @@ fun RendererSettingsScreen(
                             )
                         }
                     }
+
+                    FrameGenerationSetting(
+                        gpuInfo = DetectedGpuHolder.info,
+                        enabled = AllSettings.frameGenerationEnabled.state,
+                        onEnabledChange = { enabled ->
+                            AllSettings.frameGenerationEnabled.updateState(enabled)
+                            AllSettings.frameGenerationEnabled.save()
+                        }
+                    )
 
                     IntSliderSettingsCard(
                         modifier = Modifier.fillMaxWidth(),

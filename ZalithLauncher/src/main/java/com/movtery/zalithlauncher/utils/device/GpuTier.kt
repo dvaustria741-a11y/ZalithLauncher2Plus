@@ -37,6 +37,24 @@ data class GpuInfo(
     val tier: GpuTier
 )
 
+/**
+ * Caches the last [GpuInfo] detected from a live GL context (currently populated from
+ * [com.movtery.zalithlauncher.ui.screens.content.settings.BenchmarkGLRenderer]'s surface,
+ * since that's the one GL context the settings UI already has a reason to open).
+ *
+ * Until the app opens a GL/Vulkan context earlier in its lifecycle (e.g. at launch) and
+ * detects here instead, this stays `null` for a user who hasn't run the benchmark yet —
+ * [FrameGenerationSetting] treats that the same as [GpuTier.UNSUPPORTED].
+ */
+object DetectedGpuHolder {
+    var info: GpuInfo? = null
+        private set
+
+    fun update(newInfo: GpuInfo) {
+        info = newInfo
+    }
+}
+
 object GpuTierDetector {
 
     // Adreno 6xx below ~660 (e.g. Adreno 619 on Snapdragon 695) lacks the compute

@@ -6,6 +6,8 @@ package com.movtery.zalithlauncher.ui.screens.content.settings
 
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import com.movtery.zalithlauncher.utils.device.DetectedGpuHolder
+import com.movtery.zalithlauncher.utils.device.GpuTierDetector
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGLConfig
@@ -57,6 +59,10 @@ class BenchmarkGLRenderer(
     """.trimIndent()
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+        // GL_VENDOR / GL_RENDERER are only valid once a context is current, and this is
+        // the earliest reliable point in this GLSurfaceView.Renderer's lifecycle for that.
+        DetectedGpuHolder.update(GpuTierDetector.detect())
+
         GLES20.glClearColor(0.08f, 0.08f, 0.12f, 1f)
         programId = compileProgram()
         vboId = makeQuadVBO()
