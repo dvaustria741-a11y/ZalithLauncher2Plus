@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -35,7 +36,9 @@ import com.movtery.zalithlauncher.utils.device.GpuTier
 fun FrameGenerationSetting(
     gpuInfo: GpuInfo?,
     enabled: Boolean,
-    onEnabledChange: (Boolean) -> Unit
+    onEnabledChange: (Boolean) -> Unit,
+    multiplier: Int,
+    onMultiplierChange: (Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Row(
@@ -50,6 +53,28 @@ fun FrameGenerationSetting(
                 )
             }
             Switch(checked = enabled, onCheckedChange = onEnabledChange)
+        }
+
+        if (enabled) {
+            Spacer(modifier = Modifier.padding(top = 4.dp))
+            Column {
+                Text(
+                    "Frame multiplier: ${multiplier}x",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Frames produced per real frame. 2 = one interpolated frame between each " +
+                        "pair. Maps to LSFG's generationCount — not consumed by the engine yet " +
+                        "(see framegen/README.md), stored now so it's ready once it is.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Slider(
+                    value = multiplier.toFloat(),
+                    onValueChange = { onMultiplierChange(it.toInt()) },
+                    valueRange = 2f..4f,
+                    steps = 1 // one step between 2 and 4 -> snaps to 2, 3, 4
+                )
+            }
         }
 
         val tier = gpuInfo?.tier

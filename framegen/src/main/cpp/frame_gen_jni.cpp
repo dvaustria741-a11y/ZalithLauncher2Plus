@@ -66,11 +66,13 @@ JNIEXPORT jboolean JNICALL
 Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeInitialize(
     JNIEnv *env,
     jclass clazz,
-    jstring dllPath
+    jstring dllPath,
+    jint generationCount
 ) {
     (void) clazz;
     const char *path = env->GetStringUTFChars(dllPath, nullptr);
-    LOGI("nativeInitialize: dll=%s (STUB — extraction pipeline not linked in yet)", path);
+    LOGI("nativeInitialize: dll=%s generationCount=%d (STUB — extraction pipeline not linked in yet)",
+         path, generationCount);
     env->ReleaseStringUTFChars(dllPath, path);
     return JNI_FALSE;
 }

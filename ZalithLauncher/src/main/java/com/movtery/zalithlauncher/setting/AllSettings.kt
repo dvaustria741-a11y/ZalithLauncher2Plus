@@ -679,6 +679,11 @@ object AllSettings : SettingsRegistry() {
 
     // Frame Generation (UI + GPU-tier gating only for now — see FrameGenerationSetting.kt)
     val frameGenerationEnabled = boolSetting("frameGenerationEnabled", false)
+    // Maps to LSFG_3_1::initialize's generationCount param (framegen/public/lsfg_3_1.hpp) —
+    // "2-4 recommended on mobile" per LSFG-Android's own settings screen. Stored now even
+    // though nativeInitialize doesn't consume it yet, so the UI/setting doesn't need
+    // reworking once that wiring lands.
+    val frameGenerationMultiplier = intSetting("frameGenerationMultiplier", 2, 2..4)
     // Content URI (as string) of the user's own, legitimately-owned Lossless.dll.
     // Never bundled/redistributed by this project — see FrameGenDllPicker.kt.
     val frameGenerationDllUri = stringSetting("frameGenerationDllUri", "")

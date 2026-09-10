@@ -405,6 +405,10 @@ fun RendererSettingsScreen(
                         onEnabledChange = { enabled ->
                             AllSettings.frameGenerationEnabled.updateState(enabled)
                             AllSettings.frameGenerationEnabled.save()
+                        },
+                        multiplier = AllSettings.frameGenerationMultiplier.state,
+                        onMultiplierChange = { value ->
+                            AllSettings.frameGenerationMultiplier.save(value)
                         }
                     )
                     if (AllSettings.frameGenerationEnabled.state) {

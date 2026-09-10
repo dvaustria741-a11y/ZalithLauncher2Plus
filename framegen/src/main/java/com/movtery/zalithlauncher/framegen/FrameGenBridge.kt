@@ -24,10 +24,13 @@ object FrameGenBridge {
      *   Lossless.dll — NOT the content:// URI FrameGenDllPicker currently stores. Native
      *   code can't read SAF content URIs directly, so whatever calls this still needs to
      *   copy the picked file into app-internal storage first. Not done yet.
+     * @param generationCount maps to LSFG_3_1::initialize's generationCount param (2-4,
+     *   "recommended 3-4 on mobile" per LSFG-Android's own settings screen). Accepted here
+     *   but not yet forwarded to anything real — see nativeInitialize's TODO.
      * @return whether initialization succeeded. Always false right now.
      */
-    fun initialize(dllPath: String): Boolean =
-        nativeInitialize(dllPath)
+    fun initialize(dllPath: String, generationCount: Int): Boolean =
+        nativeInitialize(dllPath, generationCount)
 
     /** @return a context id, or -1 if creation failed (always the case right now). */
     fun createContext(in0: HardwareBuffer, in1: HardwareBuffer, width: Int, height: Int): Int =
@@ -45,7 +48,7 @@ object FrameGenBridge {
     fun finalizeEngine() =
         nativeFinalize()
 
-    @JvmStatic private external fun nativeInitialize(dllPath: String): Boolean
+    @JvmStatic private external fun nativeInitialize(dllPath: String, generationCount: Int): Boolean
     @JvmStatic private external fun nativeCreateContext(in0: HardwareBuffer, in1: HardwareBuffer, width: Int, height: Int): Int
     @JvmStatic private external fun nativePresent(contextId: Int)
     @JvmStatic private external fun nativeDeleteContext(contextId: Int)
