@@ -53,6 +53,16 @@ data class VulkanCapabilities(
     val isAllSupported: Boolean
         get() = isVersionSupported && missingExtensions.isEmpty() && missingFeatures.isEmpty()
 
+    /**
+     * lsfg-vk's Android AHardwareBuffer path hard-requires VK_EXT_robustness2 on both the
+     * v3.1 and v3.1p shader contexts (see lsfg-vk-android/framegen/src/core/device.cpp) —
+     * this is the actual hardware gate for frame generation, not the GpuTier model-number
+     * heuristic in GpuTier.kt, which only exists as a pre-launch UI estimate before this
+     * real check has run.
+     */
+    val supportsFrameGeneration: Boolean
+        get() = "VK_EXT_robustness2" in extensions
+
     companion object {
         val REQUIRED_EXTENSIONS = listOf(
             "VK_KHR_dynamic_rendering",
