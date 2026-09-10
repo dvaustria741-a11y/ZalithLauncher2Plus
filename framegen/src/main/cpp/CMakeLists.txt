@@ -17,9 +17,9 @@ find_library(log-lib log)
 find_library(android-lib android)
 
 target_link_libraries(zalith_framegen_jni
-    framegen   # TODO(dex): confirm this matches the actual target name lsfg-vk-android's
-               # CMakeLists.txt exports — verify with `cmake --build . --target help` once
-               # this builds locally; it wasn't obvious from the README alone.
+    lsfg-vk-framegen   # confirmed via native/lsfg-vk-android/framegen/CMakeLists.txt —
+                       # the "framegen" name I guessed earlier was just the directory,
+                       # not a CMake target.
     ${log-lib}
     ${android-lib}
 )

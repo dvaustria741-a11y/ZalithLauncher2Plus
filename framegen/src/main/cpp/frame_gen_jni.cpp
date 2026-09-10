@@ -1,32 +1,41 @@
 // Zalith Launcher 2 Plus
 //
 // JNI glue between FrameGenBridge.kt and lsfg-vk-android's public C++ API
-// (native/lsfg-vk-android/framegen/public/lsfg_3_1.hpp, lsfg_3_1p.hpp).
+// (native/lsfg-vk-android/framegen/public/lsfg_3_1.hpp).
 //
-// STATUS: scaffolding only. The function signatures below match the real public API
-// (createContextFromAHB / Generate / waitIdle) as documented in that submodule's README,
-// but the actual frame hand-off is NOT implemented — see the TODOs. Do not ship this
-// without finishing and on-device testing each TODO.
+// STATUS: scaffolding only, rewritten once against the *actual* header contents
+// instead of guessing — the earlier version of this file had the wrong shape entirely
+// (a Context-handle-per-call model; the real API is a global initialize() + a
+// per-swapchain int32_t context id + semaphore-based presentContext()). Still not
+// functional — see the TODOs, and framegen/README.md for what's still missing.
 //
-// THE OPEN QUESTION THIS FILE DOESN'T ANSWER:
-// lsfg-vk on Linux runs as an implicit Vulkan layer that intercepts vkQueuePresentKHR
-// on someone else's swapchain. Zalith doesn't need the layer-injection trick LSFG-Android
-// uses (MediaProjection + overlay) since it renders Minecraft itself, in-process — but it
-// still needs *some* interception point that hands this code the two most recent rendered
-// frames as AHardwareBuffers before they reach the display.
+// REAL API SHAPE (from lsfg_3_1.hpp, verified against the submodule directly):
+//   initialize(deviceUUID, isHdr, flowScale, generationCount, loader) — once, globally.
+//     `loader` is std::function<vector<uint8_t>(string)> — given a shader name, return
+//     its bytecode. NOT implemented here yet (see nativeInitialize TODO below): it needs
+//     Extract::getShader() from native/lsfg-vk-android's src/extract/*.cpp, which this
+//     module does NOT currently link against (only lsfg-vk-framegen, not the full
+//     lsfg-vk target that owns extraction). That's the next real blocker, not faked here.
+//   createContextFromAHB(in0, in1, outN, extent, format) -> int32_t context id.
+//   presentContext(id, inSem, outSem) — the actual per-frame generation call. Takes
+//     raw fd-based semaphores, not a synchronous "hand me a buffer back" call.
+//   deleteContext(id), finalize(), waitIdle().
 //
-// For GL-based renderers (GL4ES, VirGL, MobileGlues) there's no Vulkan swapchain to hook at
-// all — frame generation as built here only applies to the Kopper / VulkanZinkRenderer path.
-// For that path, ZalithLauncher/src/main/jni/ctxbridges/ already has a precedent for this
-// exact kind of interception: bridge_tbl.h's br_swap_buffers function-pointer table
-// intercepts eglSwapBuffers for the GL renderers. Vulkan has no equivalent bridge in this
-// repo yet. The likely shape of one, based on how driver_helper.c already redirects Vulkan
-// driver loading: a small shim that LWJGL's dlopen("libvulkan.so") resolves to instead of
-// the real loader, forwarding every function except vkQueuePresentKHR, which it intercepts
-// to capture the outgoing swapchain image before presenting it. That shim does not exist
-// yet and is NOT part of this scaffold — confirming this approach even works (Android may
-// impose restrictions here that aren't obvious from source alone) needs to happen on a real
-// Adreno 7xx+ device before more code gets written against it.
+// STILL OPEN, CONFIRMED WHILE READING THE SOURCE (not guesses):
+//   - Extract::extractShaders()/getShader() live in native/lsfg-vk-android's
+//     src/extract/*.cpp (part of the `lsfg-vk` target, not `lsfg-vk-framegen`), and
+//     depend on pe-parse + dxbc + toml11 — none of which this CMakeLists.txt links yet.
+//   - Config::dll (native/lsfg-vk-android/include/config/config.hpp) is how that code
+//     finds Lossless.dll: either a TOML config file, or the LSFG_DLL_PATH env var
+//     (src/config/config.cpp). Android has no equivalent of the Linux config file path
+//     it defaults to, so this glue would need to setenv("LSFG_DLL_PATH", ...) itself
+//     before calling extractShaders() — see nativeInitialize TODO.
+//   - That env var needs a real filesystem path, not a content:// URI. FrameGenDllPicker
+//     currently only stores the SAF URI — it will need to copy the file into app-internal
+//     storage before this can work at all. Not done yet.
+//   - The swapchain-interception problem from the original scaffold notes is still
+//     completely unsolved — createContextFromAHB/presentContext need real AHardwareBuffers
+//     from Minecraft's actual rendered frames, and nothing produces those yet.
 
 #include <jni.h>
 #include <android/hardware_buffer_jni.h>
@@ -40,85 +49,97 @@
 
 extern "C" {
 
-// Mirrors LSFG_3_1::createContextFromAHB. dllPath is a filesystem path to the user's own
-// Lossless.dll (see FrameGenerationSetting's DLL picker) — lsfg-vk-android's pe-parse step
-// extracts the shader chain from it on first call.
+// Mirrors LSFG_3_1::initialize. dllPath is a REAL FILESYSTEM PATH (not a content:// URI —
+// see FrameGenDllPicker TODO) to the user's own, legitimately-owned Lossless.dll.
 //
-// TODO(dex): lsfg_vk's createContextFromAHB signature in the real header also wants
-// per-buffer format/extent info, not just raw AHardwareBuffer* — check
-// native/lsfg-vk-android/framegen/public/lsfg_3_1.hpp directly once this is building,
-// this stub guesses at a plausible shape rather than committing to one blind.
-JNIEXPORT jlong JNICALL
-Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeCreateContext(
+// TODO(dex): completely unimplemented. Needs to:
+//   1. setenv("LSFG_DLL_PATH", dllPath, 1) so Extract::extractShaders() can find it
+//      (matches src/config/config.cpp's env-var override path).
+//   2. Link this module against native/lsfg-vk-android's src/extract/*.cpp + its deps
+//      (pe-parse, dxbc, toml11) — not currently in this CMakeLists.txt at all.
+//   3. Call Extract::extractShaders(), then pass Extract::getShader as the `loader`
+//      std::function to LSFG_3_1::initialize(), along with a real Vulkan deviceUUID
+//      (from the app's own VkPhysicalDevice — not sourced anywhere in this scaffold yet).
+// Currently a no-op that always reports failure so nothing downstream can silently
+// proceed as if it succeeded.
+JNIEXPORT jboolean JNICALL
+Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeInitialize(
     JNIEnv *env,
     jclass clazz,
     jstring dllPath
 ) {
     (void) clazz;
     const char *path = env->GetStringUTFChars(dllPath, nullptr);
-    LOGI("nativeCreateContext: dll=%s (STUB — not calling into lsfg-vk-android yet)", path);
+    LOGI("nativeInitialize: dll=%s (STUB — extraction pipeline not linked in yet)", path);
     env->ReleaseStringUTFChars(dllPath, path);
-
-    // TODO(dex): actually call LSFG_3_1::createContextFromAHB(...) here once we know
-    // where the input/output AHardwareBuffers are coming from (see file header). Returning
-    // 0 makes every other call in this file a safe no-op until this is filled in.
-    return 0;
+    return JNI_FALSE;
 }
 
-// Mirrors LSFG_3_1::Generate. Takes the context handle from nativeCreateContext plus the
-// two most recently rendered frames, and is meant to return an interpolated frame.
-//
-// TODO(dex): this is the actual frame hand-off and it is completely unimplemented. It
-// needs a real AHardwareBuffer for `previousFrame`/`currentFrame`, which nothing in this
-// scaffold produces yet — see the Vulkan present-hook question at the top of this file.
-JNIEXPORT jobject JNICALL
-Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeGenerate(
+// Mirrors LSFG_3_1::createContextFromAHB. Needs real AHardwareBuffers backing Minecraft's
+// actual rendered frames — nothing in this scaffold produces those (see the Vulkan
+// present-hook question in framegen/README.md). Always returns -1 (invalid context id).
+JNIEXPORT jint JNICALL
+Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeCreateContext(
     JNIEnv *env,
     jclass clazz,
-    jlong contextHandle,
-    jobject previousFrame,
-    jobject currentFrame
+    jobject in0,
+    jobject in1,
+    jint width,
+    jint height
 ) {
+    (void) env;
     (void) clazz;
-    (void) previousFrame;
-    (void) currentFrame;
-
-    if (contextHandle == 0) {
-        LOGE("nativeGenerate: context not initialized (createContext returned 0)");
-        return nullptr;
-    }
-
-    // TODO(dex): call LSFG_3_1::Generate(...) with real AHardwareBuffer-backed images.
-    LOGI("nativeGenerate: STUB — returning null, no interpolated frame produced");
-    return nullptr;
+    (void) in0;
+    (void) in1;
+    (void) width;
+    (void) height;
+    LOGE("nativeCreateContext: STUB — nativeInitialize was never really run, refusing");
+    return -1;
 }
 
-// Mirrors LSFG_3_1::waitIdle — exposed so a host Vulkan session sharing the same
-// AHardwareBuffers can synchronize without a cross-device semaphore (per the submodule's
-// README; Vulkan doesn't define one). Safe to wire up once nativeCreateContext is real.
+// Mirrors LSFG_3_1::presentContext. TODO(dex): needs real fd-based semaphores from
+// whatever ends up doing the actual swapchain interception — unimplemented.
+JNIEXPORT void JNICALL
+Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativePresent(
+    JNIEnv *env,
+    jclass clazz,
+    jint contextId
+) {
+    (void) env;
+    (void) clazz;
+    if (contextId < 0) return;
+    LOGI("nativePresent: STUB — no-op");
+}
+
+JNIEXPORT void JNICALL
+Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeDeleteContext(
+    JNIEnv *env,
+    jclass clazz,
+    jint contextId
+) {
+    (void) env;
+    (void) clazz;
+    if (contextId < 0) return;
+    LOGI("nativeDeleteContext: STUB");
+}
+
 JNIEXPORT void JNICALL
 Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeWaitIdle(
     JNIEnv *env,
-    jclass clazz,
-    jlong contextHandle
+    jclass clazz
 ) {
     (void) env;
     (void) clazz;
-    if (contextHandle == 0) return;
-    // TODO(dex): call LSFG_3_1::waitIdle() on the real context.
 }
 
 JNIEXPORT void JNICALL
-Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeDestroyContext(
+Java_com_movtery_zalithlauncher_framegen_FrameGenBridge_nativeFinalize(
     JNIEnv *env,
-    jclass clazz,
-    jlong contextHandle
+    jclass clazz
 ) {
     (void) env;
     (void) clazz;
-    if (contextHandle == 0) return;
-    // TODO(dex): free the real context once nativeCreateContext produces one.
-    LOGI("nativeDestroyContext: STUB");
+    LOGI("nativeFinalize: STUB");
 }
 
 } // extern "C"

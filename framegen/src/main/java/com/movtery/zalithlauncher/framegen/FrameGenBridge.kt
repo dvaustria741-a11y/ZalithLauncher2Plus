@@ -9,10 +9,9 @@ import android.hardware.HardwareBuffer
 /**
  * Kotlin side of the lsfg-vk-android JNI bridge.
  *
- * STATUS: scaffolding — see frame_gen_jni.cpp for exactly what's stubbed. Every method here
- * is safe to call (won't crash), but [createContext] currently always fails and every other
- * method becomes a no-op as a result. Nothing here has been tested against a real Adreno
- * device or a real Lossless.dll.
+ * STATUS: scaffolding — see frame_gen_jni.cpp for exactly what's stubbed. [initialize]
+ * always returns false right now, and everything else is a no-op as a result. Nothing
+ * here has been tested against a real Adreno device or a real Lossless.dll.
  */
 object FrameGenBridge {
 
@@ -21,29 +20,35 @@ object FrameGenBridge {
     }
 
     /**
-     * @param dllPath filesystem path to the user's own, legitimately-owned Lossless.dll.
-     *   This project never bundles or redistributes that file — see FrameGenerationSetting's
-     *   DLL picker, which just stores whatever path the user selects via SAF.
-     * @return an opaque context handle, or 0 if creation failed (always the case right now).
+     * @param dllPath a REAL FILESYSTEM PATH to the user's own, legitimately-owned
+     *   Lossless.dll — NOT the content:// URI FrameGenDllPicker currently stores. Native
+     *   code can't read SAF content URIs directly, so whatever calls this still needs to
+     *   copy the picked file into app-internal storage first. Not done yet.
+     * @return whether initialization succeeded. Always false right now.
      */
-    fun createContext(dllPath: String): Long =
-        nativeCreateContext(dllPath)
+    fun initialize(dllPath: String): Boolean =
+        nativeInitialize(dllPath)
 
-    /**
-     * @return an interpolated frame, or null if generation isn't available (always the case
-     *   right now — see the TODOs in frame_gen_jni.cpp for what's missing).
-     */
-    fun generate(contextHandle: Long, previousFrame: HardwareBuffer, currentFrame: HardwareBuffer): HardwareBuffer? =
-        nativeGenerate(contextHandle, previousFrame, currentFrame)
+    /** @return a context id, or -1 if creation failed (always the case right now). */
+    fun createContext(in0: HardwareBuffer, in1: HardwareBuffer, width: Int, height: Int): Int =
+        nativeCreateContext(in0, in1, width, height)
 
-    fun waitIdle(contextHandle: Long) =
-        nativeWaitIdle(contextHandle)
+    fun present(contextId: Int) =
+        nativePresent(contextId)
 
-    fun destroyContext(contextHandle: Long) =
-        nativeDestroyContext(contextHandle)
+    fun deleteContext(contextId: Int) =
+        nativeDeleteContext(contextId)
 
-    @JvmStatic private external fun nativeCreateContext(dllPath: String): Long
-    @JvmStatic private external fun nativeGenerate(contextHandle: Long, previousFrame: HardwareBuffer, currentFrame: HardwareBuffer): HardwareBuffer?
-    @JvmStatic private external fun nativeWaitIdle(contextHandle: Long)
-    @JvmStatic private external fun nativeDestroyContext(contextHandle: Long)
+    fun waitIdle() =
+        nativeWaitIdle()
+
+    fun finalizeEngine() =
+        nativeFinalize()
+
+    @JvmStatic private external fun nativeInitialize(dllPath: String): Boolean
+    @JvmStatic private external fun nativeCreateContext(in0: HardwareBuffer, in1: HardwareBuffer, width: Int, height: Int): Int
+    @JvmStatic private external fun nativePresent(contextId: Int)
+    @JvmStatic private external fun nativeDeleteContext(contextId: Int)
+    @JvmStatic private external fun nativeWaitIdle()
+    @JvmStatic private external fun nativeFinalize()
 }
