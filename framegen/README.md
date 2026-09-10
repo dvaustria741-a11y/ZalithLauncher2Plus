@@ -12,10 +12,22 @@ as "verified against source" or "still a guess," as marked.
   int32_t`, then `presentContext(id, inSem, outSem)` per frame using fd-based semaphores —
   not the synchronous "hand me a buffer" shape the first version of this scaffold guessed.
   `frame_gen_jni.cpp` has been rewritten to match this.
-- `initialize`'s `loader` callback needs shader bytecode by name. That comes from
-  `Extract::extractShaders()` / `Extract::getShader()` (native/lsfg-vk-android's
-  `src/extract/*.cpp`), which belongs to the `lsfg-vk` target, not `lsfg-vk-framegen`. This
-  module currently links neither those sources nor their deps (pe-parse, dxbc, toml11).
+- `initialize`'s `loader` callback needs shader bytecode by name. **Correction from an earlier
+  version of this doc:** I'd assumed this meant linking `Extract::extractShaders()`/
+  `Extract::getShader()` from `native/lsfg-vk-android`'s `src/extract/*.cpp` (part of the
+  Linux-oriented `lsfg-vk` target, with toml11/pe-parse/dxbc deps). Reading
+  FrankBarretta's own `LSFG-Android-Application/app/src/main/cpp/CMakeLists.txt` shows that's
+  not the path it takes — it skips `lsfg-vk`/toml11 entirely and reimplements Android-specific
+  shader loading itself (`android_shader_loader.cpp`, not reused from this repo). Worth
+  noting: that same file's comment says "Phase 2 only exposes nativeVersion() plus
+  placeholder symbols; later phases add the real shader extraction and Vulkan context
+  entry points" — so upstream's own reference app hasn't finished this piece either. This
+  isn't a finished library to copy from; it's a moving target we're building alongside.
+- Fixed: `VK_USE_PLATFORM_ANDROID_KHR` wasn't defined, so `framegen/src/core/image.cpp`
+  couldn't see `VkAndroidHardwareBufferFormatPropertiesANDROID` and two related structs.
+  Fixed by building `volk` ourselves with that define set and `add_subdirectory`-ing
+  `framegen/` directly instead of the submodule root — matching upstream's own approach
+  exactly rather than guessing at a workaround.
 - `Extract` finds Lossless.dll via `Config::dll`, set either from a TOML config file or the
   `LSFG_DLL_PATH` env var (`src/config/config.cpp`). Android has no equivalent default config
   path, so our glue needs to `setenv("LSFG_DLL_PATH", ...)` itself before calling
