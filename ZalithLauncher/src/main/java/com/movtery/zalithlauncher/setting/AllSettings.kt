@@ -96,6 +96,10 @@ object AllSettings : SettingsRegistry() {
      * 强制在高性能核心运行
      */
     val bigCoreAffinity = boolSetting("bigCoreAffinity", true)
+    // Variable Rate Shading — see ZalithLauncher/src/main/jni/vrs/vrs_shim.c. Fixed at 2x2
+    // for this first pass rather than a full rate picker; the interception approach itself
+    // needs on-device confirmation before finer controls are worth building.
+    val vrsEnabled = boolSetting("vrsEnabled", false)
 
     /**
      * 启用着色器日志输出

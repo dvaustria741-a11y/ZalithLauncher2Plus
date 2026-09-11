@@ -28,6 +28,7 @@
 #include <environ/environ.h>
 #include <android/dlext.h>
 #include <time.h>
+#include "vrs/vrs_shim.h"
 #include "utils.h"
 #include "ctxbridges/bridge_tbl.h"
 #include "ctxbridges/osm_bridge.h"
@@ -270,7 +271,10 @@ void* maybe_load_vulkan() {
     // 1. it's easier to do that
     // 2. it won't break if something will try to load vulkan and osmesa simultaneously
     if(getenv("VULKAN_PTR") == NULL) load_vulkan();
-    return (void*) strtoul(getenv("VULKAN_PTR"), NULL, 0x10);
+    void* real_driver = (void*) strtoul(getenv("VULKAN_PTR"), NULL, 0x10);
+    // See vrs/vrs_shim.c — returns real_driver unchanged unless VRS is enabled via the
+    // ZALITH_VRS_RATE env var, so this is a no-op when the feature is off.
+    return vrs_maybe_wrap_vulkan(real_driver);
 }
 
 static int frameCount = 0;

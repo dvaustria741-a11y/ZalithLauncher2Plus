@@ -415,6 +415,14 @@ fun RendererSettingsScreen(
                         FrameGenDllPicker(modifier = Modifier.fillMaxWidth())
                     }
 
+                    VrsSetting(
+                        enabled = AllSettings.vrsEnabled.state,
+                        onEnabledChange = { enabled ->
+                            AllSettings.vrsEnabled.updateState(enabled)
+                            AllSettings.vrsEnabled.save()
+                        }
+                    )
+
                     IntSliderSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
                         position = CardPosition.Middle,

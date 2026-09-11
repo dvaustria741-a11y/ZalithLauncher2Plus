@@ -63,6 +63,18 @@ data class VulkanCapabilities(
     val supportsFrameGeneration: Boolean
         get() = "VK_EXT_robustness2" in extensions
 
+    /**
+     * Real hardware gate for Variable Rate Shading (pipeline rate only — not attachment
+     * rate, which needs more). VK_KHR_create_renderpass2 is also required per
+     * vkCmdSetFragmentShadingRateKHR's own VUIDs, but every device that exposes
+     * VK_KHR_fragment_shading_rate in practice also exposes it, so not checked separately.
+     * VK_KHR_get_physical_device_properties2 is the other listed prerequisite, but it's an
+     * *instance* extension folded into core since Vulkan 1.1 — irrelevant here since we
+     * only ever run on 1.1+ devices anyway.
+     */
+    val supportsVariableRateShading: Boolean
+        get() = "VK_KHR_fragment_shading_rate" in extensions
+
     companion object {
         val REQUIRED_EXTENSIONS = listOf(
             "VK_KHR_dynamic_rendering",
